@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Breach Intelligence Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🔒</span>
+                <span class="logo-text">Breach Intel</span>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="#welcome" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#viz1" class="nav-link">Viz 1</a></li>
+                <li><a href="#viz2" class="nav-link">Viz 2</a></li>
+                <li><a href="#viz3" class="nav-link">Viz 3</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="language-switcher">
+                <a href="website.html" class="lang-link active">EN</a>
+                <span class="lang-separator">|</span>
+                <a href="website-hu.html" class="lang-link">HU</a>
+            </div>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Welcome Section -->
+    <section class="welcome-section" id="welcome">
+        <div class="container">
+            <div class="welcome-content">
+                <div class="glitch-wrapper">
+                    <h1 class="welcome-title glitch" data-text="Data Breach Intelligence">Data Breach Intelligence</h1>
+                </div>
+                <p class="welcome-subtitle">Analyzing cybersecurity incidents, breach methods, and digital vulnerabilities</p>
+                <div class="welcome-buttons">
+                    <button class="btn btn-primary" onclick="scrollToSection('about')">
+                        <span>Explore Threats</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="scrollToSection('viz1')">
+                        <span>View Analysis</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+                <div class="scroll-indicator">
+                    <div class="mouse"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Description Section -->
+    <section class="description-section" id="about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Cybersecurity Intelligence</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="glass-card">
+                <p class="description-text">
+                    This cybersecurity intelligence dashboard analyzes data breach incidents across industries 
+                    and timeframes. Through interactive visualizations, we examine breach methods, exposed 
+                    record volumes, and security vulnerabilities that impact organizations worldwide. Our 
+                    analysis reveals critical patterns in cyber threats, helping security professionals, 
+                    organizations, and policymakers understand the evolving landscape of digital security. 
+                    Each visualization uncovers insights about attack vectors, vulnerable sectors, and the 
+                    scale of data exposure in our increasingly connected world.
+                </p>
+                <button class="btn btn-outline" onclick="scrollToSection('viz1')">
+                    <span>Explore Breach Data</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 1 -->
+    <section class="viz-section" id="viz1">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Platform Breach Analysis</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Data Breaches by Social Media Platform</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization1"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This visualization reveals the staggering scale of data breaches across major social media 
+                        platforms, exposing millions of user records to potential misuse. Each bar represents the 
+                        volume of compromised user data, highlighting how vulnerable our digital identities have 
+                        become. Facebook's breach of over 858 million records in 2019 stands as a stark reminder 
+                        of the consequences of inadequate security measures. These incidents demonstrate that even 
+                        the largest tech companies struggle with protecting user data, underscoring the urgent need 
+                        for enhanced security protocols and transparency in how personal information is safeguarded.
+                    </p>
+                    <button class="btn btn-small">Learn More</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 2 -->
+    <section class="viz-section" id="viz2">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Breach Timeline</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content reverse">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Data Breach Records Trend Over Time</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization2"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This timeline reveals an alarming escalation of data breach incidents over nearly two 
+                        decades, with exposed records growing from millions to billions. The dramatic peaks in 
+                        2013 (3.47 billion), 2018 (1.53 billion), and 2019 (3.82 billion records) mark watershed 
+                        moments in cybersecurity history. The upward trajectory demonstrates that as our digital 
+                        footprint expands, so does our vulnerability. Despite increased awareness and security 
+                        investments, the scale of breaches continues to grow, suggesting that existing security 
+                        frameworks may be insufficient against evolving attack methods. This trend demands a 
+                        fundamental rethinking of how we protect digital assets in an interconnected world.
+                    </p>
+                    <button class="btn btn-small">Learn More</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 3 -->
+    <section class="viz-section" id="viz3">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Attack Vector Analysis</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Breach Methods vs Number of Incidents</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization3"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This scatter plot analyzes breach method categories and their frequency of incidents. 
+                        Each point represents a categorized breach method, positioned by category (x-axis) 
+                        and number of incidents (y-axis). The methods have been grouped into broader categories 
+                        such as External Attack, Poor Security/Configuration, Accidental Exposure, Physical 
+                        Loss/Theft, Insider Threat, and others. The size of each circle indicates the total 
+                        volume of records exposed for that category, while the color intensity reflects the 
+                        frequency of incidents. The visualization reveals which breach categories occur most 
+                        frequently and helps identify the most common attack vectors. By categorizing methods, 
+                        we can better understand the primary security failure modes and focus prevention efforts 
+                        on the most prevalent threat categories.
+                    </p>
+                    <button class="btn btn-small">Learn More</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Get in Touch</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+                <div class="glass-card contact-card">
+                <p>Interested in cybersecurity insights or need detailed breach analysis?</p>
+                <div class="contact-buttons">
+                    <button class="btn btn-primary">
+                        <span>Get Security Report</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="btn btn-secondary">
+                        <span>Request Data</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 Breach Intelligence Dashboard. Analyzing cybersecurity threats with Vega-Lite.</p>
+                <div class="footer-buttons">
+                    <button class="btn-social" aria-label="Twitter">𝕏</button>
+                    <button class="btn-social" aria-label="GitHub">🔒</button>
+                    <button class="btn-social" aria-label="LinkedIn">in</button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

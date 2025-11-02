@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adattörés Felderítő Irányítópult</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🔒</span>
+                <span class="logo-text">Breach Intel</span>
+            </div>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="#welcome" class="nav-link">Kezdőlap</a></li>
+                <li><a href="#about" class="nav-link">Rólunk</a></li>
+                <li><a href="#viz1" class="nav-link">Viz 1</a></li>
+                <li><a href="#viz2" class="nav-link">Viz 2</a></li>
+                <li><a href="#viz3" class="nav-link">Viz 3</a></li>
+                <li><a href="#contact" class="nav-link">Kapcsolat</a></li>
+            </ul>
+            <div class="language-switcher">
+                <a href="website.html" class="lang-link">EN</a>
+                <span class="lang-separator">|</span>
+                <a href="website-hu.html" class="lang-link active">HU</a>
+            </div>
+            <button class="nav-toggle" id="nav-toggle" aria-label="Navigáció váltása">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Welcome Section -->
+    <section class="welcome-section" id="welcome">
+        <div class="container">
+            <div class="welcome-content">
+                <div class="glitch-wrapper">
+                    <h1 class="welcome-title glitch" data-text="Adattörés Felderítő">Adattörés Felderítő</h1>
+                </div>
+                <p class="welcome-subtitle">Kiberbiztonsági incidensek, törési módszerek és digitális sebezhetőségek elemzése</p>
+                <div class="welcome-buttons">
+                    <button class="btn btn-primary" onclick="scrollToSection('about')">
+                        <span>Fenyegetések Felfedezése</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="scrollToSection('viz1')">
+                        <span>Elemzés Megtekintése</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+                <div class="scroll-indicator">
+                    <div class="mouse"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Description Section -->
+    <section class="description-section" id="about">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Kiberbiztonsági Felderítés</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="glass-card">
+                <p class="description-text">
+                    Ez a kiberbiztonsági felderítő irányítópult az iparágak és időkeretek közötti adattörési 
+                    incidenseket elemzi. Interaktív vizualizációkon keresztül megvizsgáljuk a törési módszereket, 
+                    a feltárt rekordmennyiségeket és a világszerte szervezeteket érintő biztonsági sebezhetőségeket. 
+                    Elemzésünk kritikus mintákat tár fel a kiberfenyegetésekben, segítve a biztonsági szakembereket, 
+                    szervezeteket és döntéshozókat megérteni a digitális biztonság fejlődő környezetét. Minden 
+                    vizualizáció betekintést nyújt a támadási vektorokba, sebezhető szektorokba és az adatfeltárás 
+                    mértékébe a mindinkább összekapcsolt világunkban.
+                </p>
+                <button class="btn btn-outline" onclick="scrollToSection('viz1')">
+                    <span>Törési Adatok Felfedezése</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 1 -->
+    <section class="viz-section" id="viz1">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Platform Törési Elemzés</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Adattörések Közösségi Média Platformokon</h3>
+                        <button class="btn-icon" aria-label="Teljes képernyő">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization1"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Elemzés</h3>
+                    <p>
+                        Ez a vizualizáció feltárja a közösségi média platformokon bekövetkezett adattörések 
+                        elképesztő mértékét, több millió felhasználói rekordot tesz ki potenciális visszaélésre. 
+                        Minden oszlop a feltárt felhasználói adatok mennyiségét jelzi, rávilágítva, mennyire 
+                        sebezhetővé váltak digitális identitásaink. A Facebook 858 millió feletti rekordot 
+                        érintő törése 2019-ben éles figyelmeztetés a nem megfelelő biztonsági intézkedések 
+                        következményeiről. Ezek az incidensek azt mutatják, hogy még a legnagyobb tech cégeknek 
+                        is problémáik vannak a felhasználói adatok védelmével, hangsúlyozva a fokozott biztonsági 
+                        protokollok és átláthatóság sürgős szükségességét a személyes információk védelmében.
+                    </p>
+                    <button class="btn btn-small">További információk</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 2 -->
+    <section class="viz-section" id="viz2">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Törési Idővonal</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content reverse">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Adattörési Rekordok Trendje Időben</h3>
+                        <button class="btn-icon" aria-label="Teljes képernyő">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization2"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Elemzés</h3>
+                    <p>
+                        Ez az idővonal feltárja az adattörési incidensek riasztó eszkalálódását közel két 
+                        évtizeden át, a feltárt rekordok millióról milliárdra növekedésével. A 2013-ban (3,47 
+                        milliárd), 2018-ban (1,53 milliárd) és 2019-ben (3,82 milliárd rekord) bekövetkezett 
+                        drámai csúcsok vízválasztó pillanatok a kiberbiztonsági történelemben. A felfelé ívelő 
+                        tendencia azt mutatja, hogy ahogy digitális lábnyomunk bővül, úgy növekszik a 
+                        sebezhetőségünk is. A fokozott tudatosság és biztonsági beruházások ellenére a törések 
+                        mértéke továbbra is növekszik, ami arra utal, hogy a meglévő biztonsági keretek 
+                        valószínűleg nem megfelelőek az evoláló támadási módszerekkel szemben. Ez a tendencia 
+                        alapvető újragondolást követel a digitális eszközök védelmének módjáról egy 
+                        összekapcsolt világban.
+                    </p>
+                    <button class="btn btn-small">További információk</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 3 -->
+    <section class="viz-section" id="viz3">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Támadási Vektor Elemzés</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Törési Módszerek vs. Incidensek Száma</h3>
+                        <button class="btn-icon" aria-label="Teljes képernyő">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization3"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Elemzés</h3>
+                    <p>
+                        Ez a szórásdiagram elemzi a törési módszer kategóriákat és incidenseik gyakoriságát. 
+                        Minden pont egy kategorizált törési módszert jelöl, kategória (x-tengely) és incidensek 
+                        száma (y-tengely) szerint pozicionálva. A módszereket tágabb kategóriákba csoportosítottuk, 
+                        mint például Külső Támadás, Gyenge Biztonság/Konfiguráció, Véletlen Feltárás, Fizikai 
+                        Veszteség/Lopás, Belső Fenyegetés és mások. Minden kör mérete azt jelzi, hogy mennyi 
+                        rekord lett feltárva az adott kategóriában, míg a szín intenzitása az incidensek 
+                        gyakoriságát tükrözi. A vizualizáció feltárja, mely törési kategóriák fordulnak elő 
+                        leggyakrabban, és segít azonosítani a leggyakoribb támadási vektorokat. A módszerek 
+                        kategorizálásával jobban megérthetjük a főbb biztonsági hibaüzemmódokat, és 
+                        megelőzési erőfeszítéseinket a legelterjedtebb fenyegetési kategóriákra 
+                        összpontosíthatjuk.
+                    </p>
+                    <button class="btn btn-small">További információk</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Kapcsolat</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+                <div class="glass-card contact-card">
+                <p>Érdekel a kiberbiztonsági betekintés vagy részletes törési elemzésre van szüksége?</p>
+                <div class="contact-buttons">
+                    <button class="btn btn-primary">
+                        <span>Biztonsági Jelentés Kérése</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                    <button class="btn btn-secondary">
+                        <span>Adatkérés</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 Adattörés Felderítő Irányítópult. Kiberbiztonsági fenyegetések elemzése Vega-Lite-tal.</p>
+                <div class="footer-buttons">
+                    <button class="btn-social" aria-label="Twitter">𝕏</button>
+                    <button class="btn-social" aria-label="GitHub">🔒</button>
+                    <button class="btn-social" aria-label="LinkedIn">in</button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
