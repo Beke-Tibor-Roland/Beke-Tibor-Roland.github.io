@@ -55,66 +55,75 @@ function scrollToSection(sectionId) {
     }
 }
 
-// Sample data for visualizations
-const breachData = [
-    {
-        "Entity": "Facebook",
-        "Year": 2019,
-        "Records": 858500000,
-        "Organization type": "social network",
-        "Method": "poor security"
-    },
-    {
-        "Entity": "Instagram",
-        "Year": 2020,
-        "Records": 200000000,
-        "Organization type": "social network",
-        "Method": "poor security"
-    },
-    {
-        "Entity": "TikTok",
-        "Year": 2020,
-        "Records": 42000000,
-        "Organization type": "social media",
-        "Method": "poor security"
-    },
-    {
-        "Entity": "YouTube",
-        "Year": 2020,
-        "Records": 4000000,
-        "Organization type": "social media",
-        "Method": "poor security"
-    }
-];
+// Data will be fetched from API
+let breachData = [];
+let recordsByYearData = [];
+let rawMethodVsCategoryData = [];
 
-const recordsByYearData = [
-    { "Year": "2004", "Records": 92510000.0 },
-    { "Year": "2005", "Records": 46825000.0 },
-    { "Year": "2006", "Records": 71260000.0 },
-    { "Year": "2007", "Records": 153286405.0 },
-    { "Year": "2008", "Records": 69066500.0 },
-    { "Year": "2009", "Records": 255467987.0 },
-    { "Year": "2010", "Records": 15980476.0 },
-    { "Year": "2011", "Records": 227788137.0 },
-    { "Year": "2012", "Records": 428839635.0 },
-    { "Year": "2013", "Records": 3469434877.0 },
-    { "Year": "2014", "Records": 850978000.0 },
-    { "Year": "2014 and 2015", "Records": 363000.0 },
-    { "Year": "2015", "Records": 201654459.0 },
-    { "Year": "2016", "Records": 540582363.0 },
-    { "Year": "2017", "Records": 254766877.0 },
-    { "Year": "2018", "Records": 1529849832.0 },
-    { "Year": "2018-2019", "Records": 2000000.0 },
-    { "Year": "2019", "Records": 3824900831.0 },
-    { "Year": "2019-2020", "Records": 0.0 },
-    { "Year": "2020", "Records": 1251422083.0 },
-    { "Year": "2021", "Records": 61396266.0 },
-    { "Year": "2022", "Records": 9958922.0 }
-];
+// Fetch breach data from Have I Been Pwned API
+async function fetchBreachData() {
+    try {
+        const response = await fetch('https://haveibeenpwned.com/api/v3/breaches', {
+            headers: {
+                'User-Agent': 'DataBreachIntelligenceDashboard'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        
+        const breaches = await response.json();
+        
+        // Transform API data into our format - get top 15 breaches by record count
+        breachData = breaches
+            .filter(breach => breach.PwnCount && breach.PwnCount > 0 && breach.BreachDate)
+            .sort((a, b) => b.PwnCount - a.PwnCount)
+            .slice(0, 15)
+            .map(breach => ({
+                Entity: breach.Title,
+                Year: new Date(breach.BreachDate).getFullYear(),
+                Records: breach.PwnCount,
+                "Organization type": breach.Domain ? breach.Domain.split('.')[0] : 'unknown',
+                Method: breach.Description ? 'breach' : 'unknown'
+            }));
+        
+        // Aggregate by year for trend chart
+        const yearMap = new Map();
+        breaches.forEach(breach => {
+            if (breach.BreachDate && breach.PwnCount) {
+                const year = new Date(breach.BreachDate).getFullYear().toString();
+                if (yearMap.has(year)) {
+                    yearMap.get(year).Records += breach.PwnCount;
+                } else {
+                    yearMap.set(year, { Year: year, Records: breach.PwnCount });
+                }
+            }
+        });
+        recordsByYearData = Array.from(yearMap.values()).sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
+        
+        // Transform for method categorization
+        rawMethodVsCategoryData = breaches
+            .filter(breach => breach.PwnCount && breach.PwnCount > 0)
+            .map(breach => ({
+                "Organization type": breach.Domain ? breach.Domain.split('.')[0] : 'unknown',
+                "Method": breach.Description ? 'breach' : 'unknown',
+                "TotalRecords": breach.PwnCount,
+                "Count": 1
+            }));
+        
+        console.log('Breach data loaded successfully', breachData.length, 'breaches');
+        return true;
+    } catch (error) {
+        console.error('Failed to fetch breach data:', error);
+        // If API fails, show loading state
+        return false;
+    }
+}
 
 // Function to categorize breach methods
 function categorizeMethod(method) {
-    const methodLower = method.toLowerCase();
+    const methodLower = method ? method.toLowerCase() : 'unknown';
     
     if (methodLower.includes('hacked') || methodLower.includes('ransomware')) {
         return 'External Attack';
@@ -136,380 +145,542 @@ function categorizeMethod(method) {
     } else if (methodLower.includes('zero-day') || methodLower.includes('vulnerabilities')) {
         return 'Vulnerability Exploit';
     } else {
-        return 'Other';
+        return 'External Attack'; // Default to External Attack for breach category
     }
 }
 
 // Process the raw data and add categories, then aggregate by category and organization type
-const rawMethodVsCategoryData = [
-    { "Organization type": "Clinical Laboratory", "Method": "poor security", "TotalRecords": 11900000.0, "Count": 1 },
-    { "Organization type": "Consumer Goods", "Method": "hacked", "TotalRecords": 150000000.0, "Count": 1 },
-    { "Organization type": "Information Security", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "Network Monitoring", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "QR code payment", "Method": "improper setting, hacked", "TotalRecords": 20076016.0, "Count": 1 },
-    { "Organization type": "Question & Answer", "Method": "hacked", "TotalRecords": 100000000.0, "Count": 1 },
-    { "Organization type": "Telephone directory", "Method": "unknown", "TotalRecords": 299055000.0, "Count": 1 },
-    { "Organization type": "academic", "Method": "accidentally published", "TotalRecords": 43000.0, "Count": 1 },
-    { "Organization type": "academic", "Method": "hacked", "TotalRecords": 2725540.0, "Count": 9 },
-    { "Organization type": "academic", "Method": "lost / stolen computer", "TotalRecords": 2172000.0, "Count": 2 },
-    { "Organization type": "academic", "Method": "lost / stolen media", "TotalRecords": 2200000.0, "Count": 1 },
-    { "Organization type": "advertising", "Method": "hacked", "TotalRecords": 75000.0, "Count": 1 },
-    { "Organization type": "arts group", "Method": "poor security", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "background check", "Method": "unknown", "TotalRecords": 56000000.0, "Count": 1 },
-    { "Organization type": "banking", "Method": "poor security", "TotalRecords": 90000.0, "Count": 1 },
-    { "Organization type": "consulting, accounting", "Method": "poor security", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "data broker", "Method": "poor security", "TotalRecords": 340000000.0, "Count": 1 },
-    { "Organization type": "dating", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "educational services", "Method": "hacked", "TotalRecords": 35040000.0, "Count": 1 },
-    { "Organization type": "energy", "Method": "hacked", "TotalRecords": 110000.0, "Count": 1 },
-    { "Organization type": "energy", "Method": "inside job", "TotalRecords": 12900000.0, "Count": 2 },
-    { "Organization type": "energy", "Method": "poor security", "TotalRecords": 1300000.0, "Count": 1 },
-    { "Organization type": "fashion", "Method": "hacked", "TotalRecords": 123857.0, "Count": 1 },
-    { "Organization type": "financial", "Method": "accidentally published", "TotalRecords": 200000000.0, "Count": 1 },
-    { "Organization type": "financial", "Method": "hacked", "TotalRecords": 443298083.0, "Count": 19 },
-    { "Organization type": "financial", "Method": "inside job", "TotalRecords": 44300000.0, "Count": 6 },
-    { "Organization type": "financial", "Method": "intentionally lost", "TotalRecords": 960000.0, "Count": 1 },
-    { "Organization type": "financial", "Method": "lost / stolen media", "TotalRecords": 23734000.0, "Count": 7 },
-    { "Organization type": "financial", "Method": "poor security", "TotalRecords": 275000.0, "Count": 2 },
-    { "Organization type": "financial", "Method": "rogue contractor", "TotalRecords": 30000.0, "Count": 1 },
-    { "Organization type": "financial", "Method": "unsecured S3 bucket", "TotalRecords": 106000000.0, "Count": 1 },
-    { "Organization type": "financial service company", "Method": "poor security", "TotalRecords": 885000000.0, "Count": 1 },
-    { "Organization type": "financial, credit reporting", "Method": "poor security", "TotalRecords": 163119000.0, "Count": 1 },
-    { "Organization type": "gambling", "Method": "unknown", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "game", "Method": "hacked", "TotalRecords": 350000.0, "Count": 1 },
-    { "Organization type": "gaming", "Method": "accidentally published", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "gaming", "Method": "hacked", "TotalRecords": 172623989.0, "Count": 11 },
-    { "Organization type": "genealogy", "Method": "unknown", "TotalRecords": 92283889.0, "Count": 1 },
-    { "Organization type": "government", "Method": "accidentally published", "TotalRecords": 21673461.0, "Count": 7 },
-    { "Organization type": "government", "Method": "hacked", "TotalRecords": 88290899.0, "Count": 8 },
-    { "Organization type": "government", "Method": "inside job", "TotalRecords": 1412000.0, "Count": 4 },
-    { "Organization type": "government", "Method": "lost / stolen computer", "TotalRecords": 100000.0, "Count": 1 },
-    { "Organization type": "government", "Method": "lost / stolen media", "TotalRecords": 30634500.0, "Count": 6 },
-    { "Organization type": "government", "Method": "poor security", "TotalRecords": 60240000.0, "Count": 4 },
-    { "Organization type": "government, database", "Method": "hacked", "TotalRecords": 1500000.0, "Count": 1 },
-    { "Organization type": "government, healthcare", "Method": "hacked", "TotalRecords": 9037378.0, "Count": 2 },
-    { "Organization type": "government, military", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "government, military", "Method": "lost / stolen computer", "TotalRecords": 26500000.0, "Count": 1 },
-    { "Organization type": "health", "Method": "poor security", "TotalRecords": 500000.0, "Count": 1 },
-    { "Organization type": "healthcare", "Method": "hacked", "TotalRecords": 135763800.0, "Count": 18 },
-    { "Organization type": "healthcare", "Method": "inside job", "TotalRecords": 6406700.0, "Count": 2 },
-    { "Organization type": "healthcare", "Method": "lost / stolen computer", "TotalRecords": 6583234.0, "Count": 6 },
-    { "Organization type": "healthcare", "Method": "lost / stolen media", "TotalRecords": 20594036.0, "Count": 14 },
-    { "Organization type": "healthcare", "Method": "poor security", "TotalRecords": 1780600.0, "Count": 5 },
-    { "Organization type": "healthcare", "Method": "poor security/inside job", "TotalRecords": 14200.0, "Count": 1 },
-    { "Organization type": "healthcare", "Method": "unknown", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "hosting provider", "Method": "hacked", "TotalRecords": 1107034.0, "Count": 1 },
-    { "Organization type": "hotel", "Method": "hacked", "TotalRecords": 500363000.0, "Count": 7 },
-    { "Organization type": "hotel", "Method": "poor security/inside job", "TotalRecords": 5200000.0, "Count": 1 },
-    { "Organization type": "humanitarian", "Method": "unknown", "TotalRecords": 515000.0, "Count": 1 },
-    { "Organization type": "information technology", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "local search", "Method": "unprotected api", "TotalRecords": 100000000.0, "Count": 1 },
-    { "Organization type": "market analysis", "Method": "poor security", "TotalRecords": 120000000.0, "Count": 1 },
-    { "Organization type": "media", "Method": "hacked", "TotalRecords": 1700000.0, "Count": 3 },
-    { "Organization type": "messaging app", "Method": "hacked", "TotalRecords": 162000000.0, "Count": 1 },
-    { "Organization type": "military", "Method": "accidentally published", "TotalRecords": 985000.0, "Count": 2 },
-    { "Organization type": "military", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "military", "Method": "inside job", "TotalRecords": 260000.0, "Count": 1 },
-    { "Organization type": "military", "Method": "lost / stolen computer", "TotalRecords": 131000.0, "Count": 1 },
-    { "Organization type": "military", "Method": "lost / stolen media", "TotalRecords": 76072000.0, "Count": 2 },
-    { "Organization type": "military, healthcare", "Method": "lost / stolen computer", "TotalRecords": 4901432.0, "Count": 1 },
-    { "Organization type": "mobile carrier", "Method": "accidentally exposed", "TotalRecords": 900000.0, "Count": 1 },
-    { "Organization type": "mobile carrier", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "online marketing", "Method": "publicly accessible Amazon Web Services (AWS) server", "TotalRecords": 38000000.0, "Count": 1 },
-    { "Organization type": "online shopping", "Method": "ransomware hacked", "TotalRecords": 1648922.0, "Count": 1 },
-    { "Organization type": "personal and demographic data about residents and their properties of US", "Method": "Poor security", "TotalRecords": 201000000.0, "Count": 1 },
-    { "Organization type": "phone accessories", "Method": "poor security", "TotalRecords": 377428.0, "Count": 1 },
-    { "Organization type": "publisher (magazine)", "Method": "unknown", "TotalRecords": 380000.0, "Count": 1 },
-    { "Organization type": "restaurant", "Method": "hacked", "TotalRecords": 2000000.0, "Count": 3 },
-    { "Organization type": "retail", "Method": "accidentally published", "TotalRecords": 95000.0, "Count": 1 },
-    { "Organization type": "retail", "Method": "hacked", "TotalRecords": 362228335.0, "Count": 22 },
-    { "Organization type": "retail", "Method": "inside job", "TotalRecords": 8637405.0, "Count": 1 },
-    { "Organization type": "retail", "Method": "lost / stolen computer", "TotalRecords": 897000.0, "Count": 2 },
-    { "Organization type": "retail", "Method": "poor security", "TotalRecords": 283000.0, "Count": 1 },
-    { "Organization type": "shopping", "Method": "inside job", "TotalRecords": 510000.0, "Count": 1 },
-    { "Organization type": "social media", "Method": "poor security", "TotalRecords": 46000000.0, "Count": 2 },
-    { "Organization type": "social network", "Method": "accidentally published", "TotalRecords": 6000000.0, "Count": 1 },
-    { "Organization type": "social network", "Method": "accidentally uploaded", "TotalRecords": 1500000.0, "Count": 1 },
-    { "Organization type": "social network", "Method": "hacked", "TotalRecords": 173000000.0, "Count": 1 },
-    { "Organization type": "social network", "Method": "poor security", "TotalRecords": 1057500000.0, "Count": 5 },
-    { "Organization type": "social networking", "Method": "hacked", "TotalRecords": 14870304.0, "Count": 1 },
-    { "Organization type": "software", "Method": "zero-day vulnerabilities", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "special public corporation", "Method": "hacked", "TotalRecords": 1250000.0, "Count": 1 },
-    { "Organization type": "tech", "Method": "data exposed by misconfiguration", "TotalRecords": 250000000.0, "Count": 1 },
-    { "Organization type": "tech", "Method": "hacked", "TotalRecords": 157848000.0, "Count": 9 },
-    { "Organization type": "tech", "Method": "hacked/misconfiguration", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "tech", "Method": "lost / stolen computer", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "tech", "Method": "poor security", "TotalRecords": 593050000.0, "Count": 7 },
-    { "Organization type": "tech, retail", "Method": "accidentally published", "TotalRecords": 12367232.0, "Count": 1 },
-    { "Organization type": "tech, retail", "Method": "lost / stolen media", "TotalRecords": 200000.0, "Count": 1 },
-    { "Organization type": "tech, web", "Method": "hacked", "TotalRecords": 22000000.0, "Count": 1 },
-    { "Organization type": "telecom", "Method": "hacked", "TotalRecords": 45000000.0, "Count": 1 },
-    { "Organization type": "telecom", "Method": "inside job", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "telecommunications", "Method": "misconfiguration/poor security", "TotalRecords": 100000000.0, "Count": 1 },
-    { "Organization type": "telecommunications", "Method": "poor security", "TotalRecords": 320000000.0, "Count": 1 },
-    { "Organization type": "telecoms", "Method": "accidentally published", "TotalRecords": 170000.0, "Count": 1 },
-    { "Organization type": "telecoms", "Method": "hacked", "TotalRecords": 29454000.0, "Count": 7 },
-    { "Organization type": "telecoms", "Method": "inside job", "TotalRecords": 2000000.0, "Count": 1 },
-    { "Organization type": "telecoms", "Method": "lost / stolen computer", "TotalRecords": 113000.0, "Count": 1 },
-    { "Organization type": "telecoms", "Method": "lost / stolen media", "TotalRecords": 17000000.0, "Count": 1 },
-    { "Organization type": "telecoms", "Method": "poor security", "TotalRecords": 1900000.0, "Count": 1 },
-    { "Organization type": "ticket distribution", "Method": "hacked", "TotalRecords": 26151608.0, "Count": 1 },
-    { "Organization type": "transport", "Method": "hacked", "TotalRecords": 66920000.0, "Count": 5 },
-    { "Organization type": "transport", "Method": "lost / stolen media", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "transport", "Method": "poor security", "TotalRecords": 52000.0, "Count": 1 },
-    { "Organization type": "various", "Method": "poor security", "TotalRecords": 6400000.0, "Count": 1 },
-    { "Organization type": "web", "Method": "accidentally published", "TotalRecords": 28420000.0, "Count": 4 },
-    { "Organization type": "web", "Method": "hacked", "TotalRecords": 4663249235.0, "Count": 43 },
-    { "Organization type": "web", "Method": "improper setting, hacked", "TotalRecords": 1381735.0, "Count": 1 },
-    { "Organization type": "web", "Method": "inside job, hacked", "TotalRecords": 92000000.0, "Count": 1 },
-    { "Organization type": "web", "Method": "poor security", "TotalRecords": 376000.0, "Count": 2 },
-    { "Organization type": "web", "Method": "poor security / hacked", "TotalRecords": 412214295.0, "Count": 1 },
-    { "Organization type": "web", "Method": "social engineering", "TotalRecords": 6054459.0, "Count": 1 },
-    { "Organization type": "web service", "Method": "hacked", "TotalRecords": 0.0, "Count": 1 },
-    { "Organization type": "web, gaming", "Method": "hacked", "TotalRecords": 32000000.0, "Count": 1 },
-    { "Organization type": "web, military", "Method": "accidentally published", "TotalRecords": 163792.0, "Count": 1 },
-    { "Organization type": "web, tech", "Method": "hacked", "TotalRecords": 4700000.0, "Count": 1 }
-];
-
-// Aggregate data by method category and organization type
-const methodVsCategoryDataMap = new Map();
-
-rawMethodVsCategoryData.forEach(item => {
-    const category = categorizeMethod(item.Method);
-    const key = `${category}|${item["Organization type"]}`;
+function processBreachDataForCharts() {
+    // Clear previous data
+    methodVsCategoryDataMap.clear();
+    categoryAggregation.clear();
     
-    if (methodVsCategoryDataMap.has(key)) {
-        const existing = methodVsCategoryDataMap.get(key);
-        existing.TotalRecords += item.TotalRecords;
-        existing.Count += item.Count;
-    } else {
-        methodVsCategoryDataMap.set(key, {
-            "Organization type": item["Organization type"],
-            "Method Category": category,
-            "Method": item.Method,
-            "TotalRecords": item.TotalRecords,
-            "Count": item.Count
-        });
+    rawMethodVsCategoryData.forEach(item => {
+        const category = categorizeMethod(item.Method);
+        const key = `${category}|${item["Organization type"]}`;
+        
+        if (methodVsCategoryDataMap.has(key)) {
+            const existing = methodVsCategoryDataMap.get(key);
+            existing.TotalRecords += item.TotalRecords;
+            existing.Count += item.Count;
+        } else {
+            methodVsCategoryDataMap.set(key, {
+                "Organization type": item["Organization type"],
+                "Method Category": category,
+                "Method": item.Method,
+                "TotalRecords": item.TotalRecords,
+                "Count": item.Count
+            });
+        }
+    });
+
+    // Convert map to array and aggregate by category only for visualization
+    rawMethodVsCategoryData.forEach(item => {
+        const category = categorizeMethod(item.Method);
+        
+        if (categoryAggregation.has(category)) {
+            const existing = categoryAggregation.get(category);
+            existing.TotalRecords += item.TotalRecords;
+            existing.Count += item.Count;
+        } else {
+            categoryAggregation.set(category, {
+                "Method Category": category,
+                "TotalRecords": item.TotalRecords,
+                "Count": item.Count
+            });
+        }
+    });
+
+    methodVsCategoryData = Array.from(categoryAggregation.values());
+}
+
+let methodVsCategoryDataMap = new Map();
+let categoryAggregation = new Map();
+let methodVsCategoryData = [];
+
+// Helper function to create gradient colors
+function createGradient(ctx, colorStops) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    colorStops.forEach((stop, index) => {
+        gradient.addColorStop(index / (colorStops.length - 1), stop);
+    });
+    return gradient;
+}
+
+// Helper function to format large numbers
+function formatNumber(num) {
+    if (num >= 1000000000) {
+        return (num / 1000000000).toFixed(2) + 'B';
+    } else if (num >= 1000000) {
+        return (num / 1000000).toFixed(2) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(2) + 'K';
     }
-});
-
-// Convert map to array and aggregate by category only for visualization
-const categoryAggregation = new Map();
-
-rawMethodVsCategoryData.forEach(item => {
-    const category = categorizeMethod(item.Method);
-    
-    if (categoryAggregation.has(category)) {
-        const existing = categoryAggregation.get(category);
-        existing.TotalRecords += item.TotalRecords;
-        existing.Count += item.Count;
-    } else {
-        categoryAggregation.set(category, {
-            "Method Category": category,
-            "TotalRecords": item.TotalRecords,
-            "Count": item.Count
-        });
-    }
-});
-
-const methodVsCategoryData = Array.from(categoryAggregation.values());
+    return num.toString();
+}
 
 // Visualization 1: Bar Chart - Data Breaches by Entity
-const spec1 = {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "description": "Data breach records by entity",
-    "data": { "values": breachData },
-    "mark": {
-        "type": "bar",
-        "cornerRadius": 6,
-        "tooltip": true
-    },
-    "encoding": {
-        "x": {
-            "field": "Entity",
-            "type": "ordinal",
-            "axis": {
-                "title": "Social Media Platform",
-                "labelAngle": -45,
-                "labelFontSize": 12
-            },
-            "sort": { "field": "Records", "order": "descending" }
+let chart1;
+function createChart1() {
+    const ctx = document.getElementById('visualization1').getContext('2d');
+    
+    // Sort data by records descending and limit to top 10
+    const sortedData = [...breachData].sort((a, b) => b.Records - a.Records).slice(0, 10);
+    
+    chart1 = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sortedData.map(d => d.Entity),
+            datasets: [{
+                label: 'Records Exposed',
+                data: sortedData.map(d => d.Records),
+                backgroundColor: sortedData.map((d, i) => {
+                    const ratio = i / sortedData.length;
+                    const r = Math.floor(0 + (255 * ratio));
+                    const g = Math.floor(240 - (240 * ratio));
+                    const b = Math.floor(255 - (50 * ratio));
+                    return `rgba(${r}, ${g}, ${b}, 0.85)`;
+                }),
+                borderColor: sortedData.map((d, i) => {
+                    const ratio = i / sortedData.length;
+                    const r = Math.floor(0 + (255 * ratio));
+                    const g = Math.floor(240 - (240 * ratio));
+                    const b = Math.floor(255 - (50 * ratio));
+                    return `rgba(${r}, ${g}, ${b}, 1)`;
+                }),
+                borderWidth: 2,
+                borderRadius: 8,
+                hoverBackgroundColor: sortedData.map((d, i) => {
+                    const ratio = i / sortedData.length;
+                    const r = Math.floor(0 + (255 * ratio));
+                    const g = Math.floor(240 - (240 * ratio));
+                    const b = Math.floor(255 - (50 * ratio));
+                    return `rgba(${r}, ${g}, ${b}, 1)`;
+                })
+            }]
         },
-        "y": {
-            "field": "Records",
-            "type": "quantitative",
-            "axis": {
-                "title": "Records Exposed (millions)",
-                "format": "~s",
-                "labelFontSize": 12
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#00f0ff',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyColor: '#ffffff',
+                    bodyFont: {
+                        size: 12
+                    },
+                    borderColor: '#00f0ff',
+                    borderWidth: 2,
+                    padding: 15,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return sortedData[context[0].dataIndex].Entity;
+                        },
+                        label: function(context) {
+                            const data = sortedData[context.dataIndex];
+                            return [
+                                `💾 Records: ${data.Records.toLocaleString()}`,
+                                `📅 Year: ${data.Year}`,
+                                `🏢 Type: ${data["Organization type"]}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 11,
+                            weight: '500'
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 12
+                        },
+                        callback: function(value) {
+                            return formatNumber(value);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Records Exposed',
+                        color: '#00f0ff',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 240, 255, 0.08)'
+                    }
+                }
             }
-        },
-        "color": {
-            "field": "Records",
-            "type": "quantitative",
-            "scale": {
-                "range": ["#00f0ff", "#b026ff", "#ff00f5"]
-            },
-            "legend": null
-        },
-        "tooltip": [
-            {"field": "Entity", "type": "nominal", "title": "Platform"},
-            {"field": "Year", "type": "ordinal", "title": "Year"},
-            {"field": "Records", "type": "quantitative", "title": "Records Exposed", "format": ",.0f"},
-            {"field": "Organization type", "type": "nominal", "title": "Organization Type"},
-            {"field": "Method", "type": "nominal", "title": "Breach Method"}
-        ]
-    },
-    "width": "container",
-    "height": 400,
-    "config": {
-        "background": "transparent",
-        "axis": {
-            "labelFont": "Inter, sans-serif",
-            "titleFont": "Inter, sans-serif"
         }
-    }
-};
+    });
+}
 
 // Visualization 2: Line Chart - Data Breach Records Over Time
-const spec2 = {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "description": "Data breach records trend by year",
-    "data": { "values": recordsByYearData },
-    "mark": {
-        "type": "line",
-        "point": {
-            "filled": true,
-            "size": 100,
-            "fill": "#b026ff"
+let chart2;
+function createChart2() {
+    const ctx = document.getElementById('visualization2').getContext('2d');
+    
+    // Sort by year for proper timeline
+    const sortedData = [...recordsByYearData].sort((a, b) => {
+        const yearA = parseInt(a.Year.split('-')[0]);
+        const yearB = parseInt(b.Year.split('-')[0]);
+        return yearA - yearB;
+    });
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(176, 38, 255, 0.5)');
+    gradient.addColorStop(0.5, 'rgba(176, 38, 255, 0.2)');
+    gradient.addColorStop(1, 'rgba(176, 38, 255, 0.02)');
+    
+    chart2 = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: sortedData.map(d => d.Year),
+            datasets: [{
+                label: 'Records Exposed',
+                data: sortedData.map(d => d.Records),
+                borderColor: '#b026ff',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 5,
+                pointHoverRadius: 10,
+                pointBackgroundColor: '#b026ff',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#ff00f5',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 3
+            }]
         },
-        "strokeWidth": 3,
-        "tooltip": true
-    },
-    "encoding": {
-        "x": {
-            "field": "Year",
-            "type": "ordinal",
-            "axis": {
-                "title": "Year",
-                "labelAngle": -45,
-                "labelFontSize": 11
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutCubic'
             },
-            "sort": null
-        },
-        "y": {
-            "field": "Records",
-            "type": "quantitative",
-            "axis": {
-                "title": "Records Exposed (billions)",
-                "format": "~s",
-                "labelFontSize": 12
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#b026ff',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyColor: '#ffffff',
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#b026ff',
+                    borderWidth: 2,
+                    padding: 15,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            return `Year ${context[0].label}`;
+                        },
+                        label: function(context) {
+                            return `📊 Records Exposed: ${formatNumber(context.parsed.y)} (${context.parsed.y.toLocaleString()})`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 11,
+                            weight: '500'
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Year',
+                        color: '#b026ff',
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 12
+                        },
+                        callback: function(value) {
+                            return formatNumber(value);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Records Exposed',
+                        color: '#b026ff',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(176, 38, 255, 0.08)'
+                    }
+                }
             }
-        },
-        "color": {
-            "value": "#b026ff"
-        },
-        "tooltip": [
-            {"field": "Year", "type": "ordinal", "title": "Year"},
-            {"field": "Records", "type": "quantitative", "title": "Records Exposed", "format": ",.0f"}
-        ]
-    },
-    "width": "container",
-    "height": 400,
-    "config": {
-        "background": "transparent",
-        "axis": {
-            "labelFont": "Inter, sans-serif",
-            "titleFont": "Inter, sans-serif"
         }
-    }
-};
+    });
+}
 
-// Visualization 3: Scatter Plot - Breach Method Categories vs Number of Incidents
-const spec3 = {
-    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-    "description": "Data breach method categories vs number of incidents",
-    "data": { "values": methodVsCategoryData },
-    "mark": {
-        "type": "circle",
-        "opacity": 0.75,
-        "size": 120,
-        "stroke": "#ffffff",
-        "strokeWidth": 1.5,
-        "tooltip": true
-    },
-    "encoding": {
-        "x": {
-            "field": "Method Category",
-            "type": "ordinal",
-            "axis": {
-                "title": "Breach Method Category",
-                "labelAngle": -45,
-                "labelFontSize": 11
-            },
-            "sort": { "field": "Count", "order": "descending" }
+// Visualization 3: Bubble Chart - Breaches by Industry Over Time
+let chart3;
+function createChart3() {
+    const ctx = document.getElementById('visualization3').getContext('2d');
+    
+    // Get all breach data and categorize by organization type
+    const orgTypeColors = {
+        'tech': 'rgba(0, 240, 255, 0.7)',
+        'social': 'rgba(255, 0, 245, 0.7)',
+        'web': 'rgba(176, 38, 255, 0.7)',
+        'financial': 'rgba(0, 255, 127, 0.7)',
+        'retail': 'rgba(255, 215, 0, 0.7)',
+        'healthcare': 'rgba(255, 105, 180, 0.7)',
+        'government': 'rgba(64, 224, 208, 0.7)',
+        'gaming': 'rgba(255, 140, 0, 0.7)',
+        'telecom': 'rgba(147, 112, 219, 0.7)',
+        'other': 'rgba(169, 169, 169, 0.7)'
+    };
+    
+    // Categorize organization types
+    function getOrgCategory(orgType) {
+        const type = orgType.toLowerCase();
+        if (type.includes('tech') || type.includes('technology')) return 'tech';
+        if (type.includes('social') || type.includes('facebook') || type.includes('instagram')) return 'social';
+        if (type.includes('web')) return 'web';
+        if (type.includes('financial') || type.includes('bank')) return 'financial';
+        if (type.includes('retail') || type.includes('shopping')) return 'retail';
+        if (type.includes('healthcare') || type.includes('health')) return 'healthcare';
+        if (type.includes('government') || type.includes('military')) return 'government';
+        if (type.includes('gam')) return 'gaming';
+        if (type.includes('telecom')) return 'telecom';
+        return 'other';
+    }
+    
+    // Group data by organization category
+    const categoryData = {};
+    breachData.forEach(breach => {
+        const category = getOrgCategory(breach["Organization type"]);
+        if (!categoryData[category]) {
+            categoryData[category] = [];
+        }
+        categoryData[category].push({
+            x: breach.Year,
+            y: breach.Records,
+            r: Math.max(3, Math.min(15, Math.log10(breach.Records) * 2)),
+            entity: breach.Entity
+        });
+    });
+    
+    // Create datasets for each category
+    const datasets = Object.keys(categoryData).map(category => ({
+        label: category.charAt(0).toUpperCase() + category.slice(1),
+        data: categoryData[category],
+        backgroundColor: orgTypeColors[category] || orgTypeColors.other,
+        borderColor: (orgTypeColors[category] || orgTypeColors.other).replace('0.7', '1'),
+        borderWidth: 2
+    }));
+    
+    chart3 = new Chart(ctx, {
+        type: 'bubble',
+        data: {
+            datasets: datasets
         },
-        "y": {
-            "field": "Count",
-            "type": "quantitative",
-            "axis": {
-                "title": "Number of Incidents",
-                "format": "~s",
-                "labelFontSize": 12
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif',
+                            weight: '500'
+                        },
+                        padding: 10,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#ff00f5',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyColor: '#ffffff',
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#ff00f5',
+                    borderWidth: 2,
+                    padding: 15,
+                    displayColors: true,
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].raw.entity || 'Breach Incident';
+                        },
+                        label: function(context) {
+                            return [
+                                `Industry: ${context.dataset.label}`,
+                                `Year: ${context.parsed.x}`,
+                                `Records: ${formatNumber(context.parsed.y)} (${context.parsed.y.toLocaleString()})`,
+                                `Impact: ${context.raw.r > 20 ? 'Critical' : context.raw.r > 12 ? 'High' : 'Medium'}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    min: 2000,
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 11
+                        },
+                        stepSize: 2,
+                        callback: function(value) {
+                            return Math.floor(value);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Year of Breach',
+                        color: '#ff00f5',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 0, 245, 0.08)'
+                    }
+                },
+                y: {
+                    type: 'logarithmic',
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 11
+                        },
+                        callback: function(value) {
+                            return formatNumber(value);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Records Exposed (log scale)',
+                        color: '#ff00f5',
+                        font: {
+                            family: 'Inter, sans-serif',
+                            size: 13,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 0, 245, 0.08)'
+                    }
+                }
             }
-        },
-        "color": {
-            "field": "Count",
-            "type": "quantitative",
-            "scale": {
-                "range": ["#00f0ff", "#b026ff", "#ff00f5"]
-            },
-            "legend": null
-        },
-        "tooltip": [
-            {"field": "Method Category", "type": "nominal", "title": "Method Category"},
-            {"field": "Count", "type": "quantitative", "title": "Number of Incidents", "format": ",.0f"},
-            {"field": "TotalRecords", "type": "quantitative", "title": "Total Records Exposed", "format": ",.0f"}
-        ]
-    },
-    "width": "container",
-    "height": 500,
-    "config": {
-        "background": "transparent",
-        "axis": {
-            "labelFont": "Inter, sans-serif",
-            "titleFont": "Inter, sans-serif"
-        },
-        "legend": {
-            "labelFont": "Inter, sans-serif",
-            "titleFont": "Inter, sans-serif"
         }
+    });
+}
+
+// Create visualizations when the page loads
+document.addEventListener('DOMContentLoaded', async function() {
+    // Fetch data from API first
+    const dataLoaded = await fetchBreachData();
+    
+    if (dataLoaded && breachData.length > 0) {
+        // Process the data for visualizations
+        processBreachDataForCharts();
+        
+        // Wait a bit to ensure DOM is fully ready, then render charts
+        setTimeout(() => {
+            createChart1();
+            createChart2();
+            createChart3();
+        }, 100);
+    } else {
+        console.warn('No breach data available. Charts may not render with full data.');
+        // Still attempt to render with empty data
+        setTimeout(() => {
+            createChart1();
+            createChart2();
+            createChart3();
+        }, 100);
     }
-};
-
-// Embed visualizations when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait a bit to ensure DOM is fully ready
-    setTimeout(() => {
-        vegaEmbed('#visualization1', spec1, {
-            actions: false,
-            renderer: 'svg'
-        }).catch(err => {
-            console.error('Error embedding visualization 1:', err);
-        });
-
-        vegaEmbed('#visualization2', spec2, {
-            actions: false,
-            renderer: 'svg'
-        }).catch(err => {
-            console.error('Error embedding visualization 2:', err);
-        });
-
-        vegaEmbed('#visualization3', spec3, {
-            actions: false,
-            renderer: 'svg'
-        }).catch(err => {
-            console.error('Error embedding visualization 3:', err);
-        });
-    }, 100);
 });
