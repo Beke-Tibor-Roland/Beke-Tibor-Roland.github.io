@@ -1,0 +1,30 @@
+[
+    {
+        "Entity": "Facebook",
+        "Year": 2019,
+        "Records": 858500000,
+        "Organization type": "social network",
+        "Method": "poor security"
+    },
+    {
+        "Entity": "Instagram",
+        "Year": 2020,
+        "Records": 200000000,
+        "Organization type": "social network",
+        "Method": "poor security"
+    },
+    {
+        "Entity": "TikTok",
+        "Year": 2020,
+        "Records": 42000000,
+        "Organization type": "social media",
+        "Method": "poor security"
+    },
+    {
+        "Entity": "YouTube",
+        "Year": 2020,
+        "Records": 4000000,
+        "Organization type": "social media",
+        "Method": "poor security"
+    }
+]

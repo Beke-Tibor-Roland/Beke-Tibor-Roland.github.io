@@ -493,16 +493,82 @@ body {
     width: 100% !important;
 }
 
-/* Chart.js canvas styling */
+/* Vega-Lite chart styling */
 #visualization1,
 #visualization2 {
-    width: 100% !important;
-    height: 400px !important;
+    width: 100%;
+    min-height: 400px;
 }
 
 #visualization3 {
-    width: 100% !important;
-    height: 500px !important;
+    width: 100%;
+    min-height: 500px;
+}
+
+#visualization1 svg,
+#visualization2 svg,
+#visualization3 svg {
+    width: 100%;
+    height: auto;
+}
+
+/* Style Vega-Lite chart text elements */
+#visualization1 text,
+#visualization2 text,
+#visualization3 text {
+    fill: #a0aec0 !important;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Chart-specific styling */
+#visualization1 .mark-text,
+#visualization1 .axis-title {
+    fill: #00f0ff !important;
+}
+
+#visualization2 .mark-text,
+#visualization2 .axis-title {
+    fill: #b026ff !important;
+}
+
+#visualization3 .mark-text,
+#visualization3 .axis-title {
+    fill: #ff00f5 !important;
+}
+
+/* Axis styling */
+#visualization1 .axis line,
+#visualization1 .axis path {
+    stroke: #00f0ff !important;
+}
+
+#visualization2 .axis line,
+#visualization2 .axis path {
+    stroke: #b026ff !important;
+}
+
+#visualization3 .axis line,
+#visualization3 .axis path {
+    stroke: #ff00f5 !important;
+}
+
+/* Grid lines */
+#visualization1 .grid line {
+    stroke: rgba(0, 240, 255, 0.1) !important;
+}
+
+#visualization2 .grid line {
+    stroke: rgba(176, 38, 255, 0.1) !important;
+}
+
+#visualization3 .grid line {
+    stroke: rgba(255, 0, 245, 0.1) !important;
+}
+
+#visualization1 .vega-embed summary,
+#visualization2 .vega-embed summary,
+#visualization3 .vega-embed summary {
+    display: none;
 }
 
 .viz-header {
@@ -718,138 +784,5 @@ body {
         font-size: 1rem;
     }
 }
-
-/* Pwned Email Checker Styles */
-.pwned-checker {
-    margin-top: 30px;
-}
-
-.input-group {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.email-input {
-    flex: 1;
-    min-width: 250px;
-    padding: 15px 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(0, 240, 255, 0.3);
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 1rem;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.3s ease;
-}
-
-.email-input:focus {
-    outline: none;
-    border-color: var(--neon-cyan);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-}
-
-.email-input::placeholder {
-    color: var(--text-muted);
-}
-
-.pwned-result {
-    padding: 20px;
-    border-radius: 8px;
-    min-height: 60px;
-    animation: fadeIn 0.3s ease;
-    display: none;
-}
-
-.pwned-result.show {
-    display: block;
-}
-
-.pwned-result.loading {
-    background: rgba(176, 38, 255, 0.1);
-    border: 1px solid rgba(176, 38, 255, 0.3);
-    color: var(--neon-purple);
-    text-align: center;
-}
-
-.pwned-result.safe {
-    background: rgba(0, 255, 127, 0.1);
-    border: 1px solid rgba(0, 255, 127, 0.3);
-    color: #00ff7f;
-}
-
-.pwned-result.pwned {
-    background: rgba(255, 0, 245, 0.1);
-    border: 1px solid rgba(255, 0, 245, 0.3);
-    color: var(--neon-pink);
-}
-
-.pwned-result.error {
-    background: rgba(255, 77, 77, 0.1);
-    border: 1px solid rgba(255, 77, 77, 0.3);
-    color: #ff4d4d;
-}
-
-.result-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.result-icon {
-    font-size: 1.5rem;
-}
-
-.breach-list {
-    margin-top: 15px;
-    padding-left: 0;
-    list-style: none;
-}
-
-.breach-item {
-    padding: 10px;
-    margin-bottom: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 6px;
-    border-left: 3px solid var(--neon-pink);
-}
-
-.breach-name {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.breach-date {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-left: 10px;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@media (max-width: 640px) {
-    .input-group {
-        flex-direction: column;
-    }
-
-    .email-input {
-        width: 100%;
-    }
-}
-
 
 

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Emoji_u1f512.svg/64px-Emoji_u1f512.svg.png">
     <title>Adattörés Felderítő Irányítópult</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,11 +24,13 @@
             <ul class="nav-menu" id="nav-menu">
                 <li><a href="#welcome" class="nav-link">Kezdőlap</a></li>
                 <li><a href="#about" class="nav-link">Rólunk</a></li>
-                <li><a href="#viz1" class="nav-link">Vizualizációk</a></li>
+                <li><a href="#viz1" class="nav-link">Viz 1</a></li>
+                <li><a href="#viz2" class="nav-link">Viz 2</a></li>
+                <li><a href="#viz3" class="nav-link">Viz 3</a></li>
                 <li><a href="#contact" class="nav-link">Kapcsolat</a></li>
             </ul>
             <div class="language-switcher">
-                <a href="index.html" class="lang-link">EN</a>
+                <a href="website.html" class="lang-link">EN</a>
                 <span class="lang-separator">|</span>
                 <a href="website-hu.html" class="lang-link active">HU</a>
             </div>
@@ -111,7 +114,7 @@
                             </svg>
                         </button>
                     </div>
-                    <canvas id="visualization1"></canvas>
+                    <div id="visualization1"></div>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Elemzés</h3>
@@ -151,7 +154,7 @@
                             </svg>
                         </button>
                     </div>
-                    <canvas id="visualization2"></canvas>
+                    <div id="visualization2"></div>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Elemzés</h3>
@@ -179,36 +182,36 @@
             <div class="section-header">
                 <h2 class="section-title">
                     <span class="title-line"></span>
-                    <span class="title-text">Iparági Hatás Idővonal</span>
+                    <span class="title-text">Támadási Vektor Elemzés</span>
                     <span class="title-line"></span>
                 </h2>
             </div>
             <div class="viz-content">
                 <div class="viz-container glass-card">
                     <div class="viz-header">
-                        <h3 class="viz-title">Adatsértések Evolúciója Iparági Szektorok Szerint</h3>
+                        <h3 class="viz-title">Törési Módszerek vs. Incidensek Száma</h3>
                         <button class="btn-icon" aria-label="Teljes képernyő">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                             </svg>
                         </button>
                     </div>
-                    <canvas id="visualization3"></canvas>
+                    <div id="visualization3"></div>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Elemzés</h3>
                     <p>
-                        Ez a buborékdiagram vizualizálja, hogyan fejlődtek az adatsértések különböző iparági 
-                        szektorokban az évek során. Minden buborék egy jelentős adatsértést képvisel, elhelyezve 
-                        aszerint, hogy melyik évben történt (X-tengely) és hány rekordot érintett (Y-tengely). 
-                        A buborék mérete tükrözi a sértés súlyosságát, míg a különböző színek megkülönböztetik 
-                        a szervezettípusokat, beleértve a technológiai cégeket, közösségi hálózatokat, pénzügyi 
-                        intézményeket, kiskereskedelmet, egészségügyet, kormányzatot és webes szolgáltatásokat. 
-                        Ez az időbeli nézet kritikus mintázatokat tár fel: bizonyos iparágak ismétlődő, 
-                        nagy volumenű adatsértésekkel szembesülnek, a közösségi média és technológiai szektor 
-                        tapasztalja a legmasszívabb adatkitettségeket. A vizualizáció azt is mutatja, hogyan 
-                        nőtt a sértések nagysága az idő múlásával, a milliárd rekordos incidensek egyre 
-                        gyakoribbá váltak az utóbbi években.
+                        Ez a szórásdiagram elemzi a törési módszer kategóriákat és incidenseik gyakoriságát. 
+                        Minden pont egy kategorizált törési módszert jelöl, kategória (x-tengely) és incidensek 
+                        száma (y-tengely) szerint pozicionálva. A módszereket tágabb kategóriákba csoportosítottuk, 
+                        mint például Külső Támadás, Gyenge Biztonság/Konfiguráció, Véletlen Feltárás, Fizikai 
+                        Veszteség/Lopás, Belső Fenyegetés és mások. Minden kör mérete azt jelzi, hogy mennyi 
+                        rekord lett feltárva az adott kategóriában, míg a szín intenzitása az incidensek 
+                        gyakoriságát tükrözi. A vizualizáció feltárja, mely törési kategóriák fordulnak elő 
+                        leggyakrabban, és segít azonosítani a leggyakoribb támadási vektorokat. A módszerek 
+                        kategorizálásával jobban megérthetjük a főbb biztonsági hibaüzemmódokat, és 
+                        megelőzési erőfeszítéseinket a legelterjedtebb fenyegetési kategóriákra 
+                        összpontosíthatjuk.
                     </p>
                     <button class="btn btn-small">További információk</button>
                 </div>
@@ -226,17 +229,17 @@
                     <span class="title-line"></span>
                 </h2>
             </div>
-            <div class="glass-card contact-card">
-                <p>Ellenőrizd, hogy az email címed szerepel-e valamelyik adatsértésben</p>
+                <div class="glass-card contact-card">
+                <p>Érdekel a kiberbiztonsági betekintés vagy részletes törési elemzésre van szüksége?</p>
                 <div class="contact-buttons">
-                    <a href="https://haveibeenpwned.com/" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="text-decoration: none;">
-                        <span>Email Ellenőrzése HIBP-n</span>
+                    <button class="btn btn-primary">
+                        <span>Biztonsági Jelentés Kérése</span>
                         <span class="btn-glow"></span>
-                    </a>
-                    <a href="https://haveibeenpwned.com/Passwords" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="text-decoration: none;">
-                        <span>Jelszó Ellenőrzése</span>
+                    </button>
+                    <button class="btn btn-secondary">
+                        <span>Adatkérés</span>
                         <span class="btn-glow"></span>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -259,5 +262,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
-

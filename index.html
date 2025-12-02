@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Emoji_u1f512.svg/64px-Emoji_u1f512.svg.png">
     <title>Data Breach Intelligence Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,7 +24,9 @@
             <ul class="nav-menu" id="nav-menu">
                 <li><a href="#welcome" class="nav-link">Home</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
-                <li><a href="#viz1" class="nav-link">Visualisations</a></li>
+                <li><a href="#viz1" class="nav-link">Viz 1</a></li>
+                <li><a href="#viz2" class="nav-link">Viz 2</a></li>
+                <li><a href="#viz3" class="nav-link">Viz 3</a></li>
                 <li><a href="#contact" class="nav-link">Contact</a></li>
             </ul>
             <div class="language-switcher">
@@ -98,7 +101,7 @@
                 <h2 class="section-title">
                     <span class="title-line"></span>
                     <span class="title-text">Platform Breach Analysis</span>
-                    <span class="title-line"></span>p
+                    <span class="title-line"></span>
                 </h2>
             </div>
             <div class="viz-content">
@@ -111,7 +114,7 @@
                             </svg>
                         </button>
                     </div>
-                    <canvas id="visualization1"></canvas>
+                    <div id="visualization1"></div>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Analysis</h3>
@@ -150,7 +153,7 @@
                             </svg>
                         </button>
                     </div>
-                    <canvas id="visualization2"></canvas>
+                    <div id="visualization2"></div>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Analysis</h3>
@@ -176,36 +179,35 @@
             <div class="section-header">
                 <h2 class="section-title">
                     <span class="title-line"></span>
-                    <span class="title-text">Industry Impact Timeline</span>
+                    <span class="title-text">Attack Vector Analysis</span>
                     <span class="title-line"></span>
                 </h2>
             </div>
             <div class="viz-content">
                 <div class="viz-container glass-card">
                     <div class="viz-header">
-                        <h3 class="viz-title">Breach Evolution by Industry Sector</h3>
+                        <h3 class="viz-title">Breach Methods vs Number of Incidents</h3>
                         <button class="btn-icon" aria-label="Fullscreen">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                             </svg>
                         </button>
                     </div>
-                    <canvas id="visualization3"></canvas>
+                    <div id="visualization3"></div>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Analysis</h3>
                     <p>
-                        This bubble chart visualizes how data breaches have evolved across different industry 
-                        sectors over the years. Each bubble represents a major breach, positioned by the year it 
-                        occurred (X-axis) and the number of records exposed (Y-axis). The bubble size reflects 
-                        the breach severity, while different colors distinguish various organization types including 
-                        tech companies, social networks, financial institutions, retail, healthcare, government, 
-                        and web services. This temporal view reveals crucial patterns: certain industries face 
-                        repeated large-scale breaches, with social media and tech sectors experiencing the most 
-                        massive data exposures. The visualization also shows how breach magnitude has escalated 
-                        over time, with billion-record incidents becoming more common in recent years. Understanding 
-                        which sectors are most vulnerable helps organizations benchmark their security posture 
-                        against industry-specific threat landscapes.
+                        This scatter plot analyzes breach method categories and their frequency of incidents. 
+                        Each point represents a categorized breach method, positioned by category (x-axis) 
+                        and number of incidents (y-axis). The methods have been grouped into broader categories 
+                        such as External Attack, Poor Security/Configuration, Accidental Exposure, Physical 
+                        Loss/Theft, Insider Threat, and others. The size of each circle indicates the total 
+                        volume of records exposed for that category, while the color intensity reflects the 
+                        frequency of incidents. The visualization reveals which breach categories occur most 
+                        frequently and helps identify the most common attack vectors. By categorizing methods, 
+                        we can better understand the primary security failure modes and focus prevention efforts 
+                        on the most prevalent threat categories.
                     </p>
                     <button class="btn btn-small">Learn More</button>
                 </div>
@@ -223,17 +225,17 @@
                     <span class="title-line"></span>
                 </h2>
             </div>
-            <div class="glass-card contact-card">
-                <p>Check if your email address has been compromised in a data breach</p>
+                <div class="glass-card contact-card">
+                <p>Interested in cybersecurity insights or need detailed breach analysis?</p>
                 <div class="contact-buttons">
-                    <a href="https://haveibeenpwned.com/" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="text-decoration: none;">
-                        <span>Check Your Email on HIBP</span>
+                    <button class="btn btn-primary">
+                        <span>Get Security Report</span>
                         <span class="btn-glow"></span>
-                    </a>
-                    <a href="https://haveibeenpwned.com/Passwords" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="text-decoration: none;">
-                        <span>Check Your Password</span>
+                    </button>
+                    <button class="btn btn-secondary">
+                        <span>Request Data</span>
                         <span class="btn-glow"></span>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -243,7 +245,7 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <p>&copy; 2024 Breach Intelligence Dashboard. Analyzing cybersecurity threats with Chart.js.</p>
+                <p>&copy; 2024 Breach Intelligence Dashboard. Analyzing cybersecurity threats with Vega-Lite.</p>
                 <div class="footer-buttons">
                     <button class="btn-social" aria-label="Twitter">𝕏</button>
                     <button class="btn-social" aria-label="GitHub">🔒</button>
@@ -256,4 +258,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
