@@ -57,7 +57,7 @@ function scrollToSection(sectionId) {
 
 // API Configuration - Change these URLs to your external API endpoints
 const API_CONFIG = {
-    breachesUrl: 'data/breaches.json',  // Replace with your API: 'https://api.example.com/breaches'
+    breachesUrl: 'https://raw.githubusercontent.com/Beke-Tibor-Roland/Beke-Tibor-Roland.github.io/main/New%20folder/data_breaches_global.json',
     recordsByYearUrl: 'data/records-by-year.json',  // Replace with your API
     methodVsCategoryUrl: 'method_vs_category.json'  // Replace with your API
 };
