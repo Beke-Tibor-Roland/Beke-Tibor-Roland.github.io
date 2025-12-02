@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Breach Intelligence Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -114,7 +112,7 @@
                             </svg>
                         </button>
                     </div>
-                    <div id="visualization1"></div>
+                    <canvas id="visualization1"></canvas>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Analysis</h3>
@@ -153,7 +151,7 @@
                             </svg>
                         </button>
                     </div>
-                    <div id="visualization2"></div>
+                    <canvas id="visualization2"></canvas>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Analysis</h3>
@@ -193,7 +191,7 @@
                             </svg>
                         </button>
                     </div>
-                    <div id="visualization3"></div>
+                    <canvas id="visualization3"></canvas>
                 </div>
                 <div class="viz-description glass-card">
                     <h3 class="viz-title">Analysis</h3>

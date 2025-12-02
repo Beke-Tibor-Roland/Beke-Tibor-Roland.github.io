@@ -493,47 +493,18 @@ body {
     width: 100% !important;
 }
 
-/* Vega-Lite chart styling */
+/* Chart.js canvas styling */
 #visualization1,
 #visualization2 {
-    width: 100%;
-    min-height: 400px;
+    width: 100% !important;
+    height: 400px !important;
+    display: block;
 }
 
 #visualization3 {
-    width: 100%;
-    min-height: 500px;
-}
-
-#visualization1 svg,
-#visualization2 svg,
-#visualization3 svg {
-    width: 100%;
-    height: auto;
-}
-
-/* Style Vega-Lite chart text elements */
-#visualization1 text,
-#visualization2 text,
-#visualization3 text {
-    fill: #a0aec0 !important;
-    font-family: 'Inter', sans-serif;
-}
-
-/* Chart-specific styling */
-#visualization1 .mark-text,
-#visualization1 .axis-title {
-    fill: #00f0ff !important;
-}
-
-#visualization2 .mark-text,
-#visualization2 .axis-title {
-    fill: #b026ff !important;
-}
-
-#visualization3 .mark-text,
-#visualization3 .axis-title {
-    fill: #ff00f5 !important;
+    width: 100% !important;
+    height: 500px !important;
+    display: block;
 }
 
 /* Axis styling */
@@ -555,20 +526,6 @@ body {
 /* Grid lines */
 #visualization1 .grid line {
     stroke: rgba(0, 240, 255, 0.1) !important;
-}
-
-#visualization2 .grid line {
-    stroke: rgba(176, 38, 255, 0.1) !important;
-}
-
-#visualization3 .grid line {
-    stroke: rgba(255, 0, 245, 0.1) !important;
-}
-
-#visualization1 .vega-embed summary,
-#visualization2 .vega-embed summary,
-#visualization3 .vega-embed summary {
-    display: none;
 }
 
 .viz-header {

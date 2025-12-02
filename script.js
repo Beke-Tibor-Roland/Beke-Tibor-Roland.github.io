@@ -1,5 +1,5 @@
-// Navigation functionality
-document.addEventListener('DOMContentLoaded', function() {
+// Navigation functionality and chart initialization
+document.addEventListener('DOMContentLoaded', async function() {
     // Mobile menu toggle
     const navToggle = document.getElementById('nav-toggle');
     const navMenu = document.getElementById('nav-menu');
@@ -42,6 +42,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Fetch data from GitHub API and create charts
+    breachData = await fetchBreachData();
+    
+    if (breachData.length === 0) {
+        console.error('No data available to display');
+        alert('Failed to load data. Please check the console for details.');
+        return;
+    }
+    
+    console.log('Loaded breach data:', breachData.length, 'records');
+    console.log('Sample data:', breachData.slice(0, 2));
+    console.log('Chart.js available?', typeof Chart !== 'undefined');
+    
+    // Create charts immediately
+    createChart1();
+    createChart2();
+    createChart3();
 });
 
 // Smooth scroll function for buttons
@@ -55,344 +73,504 @@ function scrollToSection(sectionId) {
     }
 }
 
-// API Configuration - Change these URLs to your external API endpoints
-const API_CONFIG = {
-    breachesUrl: 'https://raw.githubusercontent.com/Beke-Tibor-Roland/Beke-Tibor-Roland.github.io/main/New%20folder/data_breaches_global.json',
-    recordsByYearUrl: 'data/records-by-year.json',  // Replace with your API
-    methodVsCategoryUrl: 'method_vs_category.json'  // Replace with your API
-};
-
 // Global data storage
 let breachData = [];
-let recordsByYearData = [];
-let rawMethodVsCategoryData = [];
+let chart1, chart2, chart3;
 
-// Function to load data from external API/JSON files
-async function loadData() {
+// Fetch breach data from your GitHub API
+async function fetchBreachData() {
     try {
-        // Show loading indicator
-        console.log('Loading data from APIs...');
+        console.log('Fetching breach data from GitHub...');
+        const response = await fetch('https://raw.githubusercontent.com/Beke-Tibor-Roland/Beke-Tibor-Roland.github.io/main/api/data_breaches_global.json', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+            cache: 'no-cache'
+        });
         
-        // Fetch all data in parallel
-        const [breachesResponse, yearResponse, methodResponse] = await Promise.all([
-            fetch(API_CONFIG.breachesUrl),
-            fetch(API_CONFIG.recordsByYearUrl),
-            fetch(API_CONFIG.methodVsCategoryUrl)
-        ]);
-
-        // Check if all responses are OK
-        if (!breachesResponse.ok || !yearResponse.ok || !methodResponse.ok) {
-            throw new Error('Failed to fetch data from APIs');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        // Parse JSON data
-        breachData = await breachesResponse.json();
-        recordsByYearData = await yearResponse.json();
-        const methodData = await methodResponse.json();
         
-        // Handle the nested structure from method_vs_category.json
-        rawMethodVsCategoryData = methodData.data ? methodData.data.values : methodData;
-
-        console.log(`✓ Loaded ${breachData.length} breach records`);
-        console.log(`✓ Loaded ${recordsByYearData.length} yearly records`);
-        console.log(`✓ Loaded ${rawMethodVsCategoryData.length} method/category records`);
-        console.log(`Total records: ${breachData.length + recordsByYearData.length + rawMethodVsCategoryData.length}`);
-
-        return true;
+        const jsonData = await response.json();
+        console.log('Raw API response type:', Array.isArray(jsonData) ? 'Array' : typeof jsonData);
+        console.log('First item sample:', jsonData[0]);
+        
+        // The API returns a direct array
+        if (!Array.isArray(jsonData)) {
+            console.error('Unexpected data format:', jsonData);
+            throw new Error('Data is not in expected array format');
+        }
+        
+        console.log(`✓ Loaded ${jsonData.length} breach records from GitHub`);
+        return jsonData;
     } catch (error) {
-        console.error('Error loading data:', error);
-        alert('Failed to load breach data. Please check your internet connection or API configuration.');
-        return false;
+        console.error('Error fetching breach data:', error);
+        console.error('Error details:', error.message);
+        alert('Failed to load breach data. Please check your internet connection or API configuration.\n\nError: ' + error.message);
+        return [];
     }
 }
 
-// Function to categorize breach methods
-function categorizeMethod(method) {
-    const methodLower = method.toLowerCase();
-    
-    if (methodLower.includes('hacked') || methodLower.includes('ransomware')) {
-        return 'External Attack';
-    } else if (methodLower.includes('poor security') || methodLower.includes('misconfiguration') || 
-               methodLower.includes('unsecured') || methodLower.includes('unprotected') || 
-               methodLower.includes('improper setting') || methodLower.includes('data exposed by misconfiguration')) {
-        return 'Poor Security/Configuration';
-    } else if (methodLower.includes('accidentally') || methodLower.includes('accidentally published') || 
-               methodLower.includes('accidentally exposed') || methodLower.includes('accidentally uploaded')) {
-        return 'Accidental Exposure';
-    } else if (methodLower.includes('lost') || methodLower.includes('stolen')) {
-        return 'Physical Loss/Theft';
-    } else if (methodLower.includes('inside job') || methodLower.includes('rogue contractor')) {
-        return 'Insider Threat';
-    } else if (methodLower.includes('unknown')) {
-        return 'Unknown';
-    } else if (methodLower.includes('social engineering')) {
-        return 'Social Engineering';
-    } else if (methodLower.includes('zero-day') || methodLower.includes('vulnerabilities')) {
-        return 'Vulnerability Exploit';
-    } else {
-        return 'Other';
+// Helper function to format large numbers
+function formatNumber(num) {
+    if (num >= 1000000000) {
+        return (num / 1000000000).toFixed(1) + 'B';
+    } else if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
     }
+    return num.toString();
 }
 
-// Process and aggregate data
-function processMethodVsCategoryData() {
-    // Aggregate data by method category and organization type
-    const methodVsCategoryDataMap = new Map();
-
-    rawMethodVsCategoryData.forEach(item => {
-        const category = categorizeMethod(item.Method);
-        const key = `${category}|${item["Organization type"]}`;
-        
-        if (methodVsCategoryDataMap.has(key)) {
-            const existing = methodVsCategoryDataMap.get(key);
-            existing.TotalRecords += item.TotalRecords;
-            existing.Count += item.Count;
-        } else {
-            methodVsCategoryDataMap.set(key, {
-                "Organization type": item["Organization type"],
-                "Method Category": category,
-                "Method": item.Method,
-                "TotalRecords": item.TotalRecords,
-                "Count": item.Count
-            });
-        }
+// Helper function to create gradients
+function createGradient(ctx, colorStops) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    colorStops.forEach(stop => {
+        gradient.addColorStop(stop.position, stop.color);
     });
-
-    // Convert map to array and aggregate by category only for visualization
-    const categoryAggregation = new Map();
-
-    rawMethodVsCategoryData.forEach(item => {
-        const category = categorizeMethod(item.Method);
-        
-        if (categoryAggregation.has(category)) {
-            const existing = categoryAggregation.get(category);
-            existing.TotalRecords += item.TotalRecords;
-            existing.Count += item.Count;
-        } else {
-            categoryAggregation.set(category, {
-                "Method Category": category,
-                "TotalRecords": item.TotalRecords,
-                "Count": item.Count
-            });
-        }
-    });
-
-    return Array.from(categoryAggregation.values());
+    return gradient;
 }
 
-// Visualization specifications - will use data loaded from API
-function createVisualizationSpecs() {
-    const methodVsCategoryData = processMethodVsCategoryData();
+// Visualization 1: Top Breaches Bar Chart
+function createChart1() {
+    console.log('Creating Chart 1...');
+    const canvas = document.getElementById('visualization1');
     
-    return {
-        spec1: {
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "description": "Data breach records by entity",
-            "data": { "values": breachData },
-            "mark": {
-                "type": "bar",
-                "cornerRadius": 6,
-                "tooltip": true
-            },
-            "encoding": {
-                "x": {
-                    "field": "Entity",
-                    "type": "ordinal",
-                    "axis": {
-                        "title": "Social Media Platform",
-                        "labelAngle": -45,
-                        "labelFontSize": 12
-                    },
-                    "sort": { "field": "Records", "order": "descending" }
-                },
-                "y": {
-                    "field": "Records",
-                    "type": "quantitative",
-                    "axis": {
-                        "title": "Records Exposed (millions)",
-                        "format": "~s",
-                        "labelFontSize": 12
-                    }
-                },
-                "color": {
-                    "field": "Records",
-                    "type": "quantitative",
-                    "scale": {
-                        "range": ["#00f0ff", "#b026ff", "#ff00f5"]
-                    },
-                    "legend": null
-                },
-                "tooltip": [
-                    {"field": "Entity", "type": "nominal", "title": "Platform"},
-                    {"field": "Year", "type": "ordinal", "title": "Year"},
-                    {"field": "Records", "type": "quantitative", "title": "Records Exposed", "format": ",.0f"},
-                    {"field": "Organization type", "type": "nominal", "title": "Organization Type"},
-                    {"field": "Method", "type": "nominal", "title": "Breach Method"}
-                ]
-            },
-            "width": "container",
-            "height": 400,
-            "config": {
-                "background": "transparent",
-                "axis": {
-                    "labelFont": "Inter, sans-serif",
-                    "titleFont": "Inter, sans-serif"
-                }
-            }
-        },
-        spec2: {
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "description": "Data breach records trend by year",
-            "data": { "values": recordsByYearData },
-            "mark": {
-                "type": "line",
-                "point": {
-                    "filled": true,
-                    "size": 100,
-                    "fill": "#b026ff"
-                },
-                "strokeWidth": 3,
-                "tooltip": true
-            },
-            "encoding": {
-                "x": {
-                    "field": "Year",
-                    "type": "ordinal",
-                    "axis": {
-                        "title": "Year",
-                        "labelAngle": -45,
-                        "labelFontSize": 11
-                    },
-                    "sort": null
-                },
-                "y": {
-                    "field": "Records",
-                    "type": "quantitative",
-                    "axis": {
-                        "title": "Records Exposed (billions)",
-                        "format": "~s",
-                        "labelFontSize": 12
-                    }
-                },
-                "color": {
-                    "value": "#b026ff"
-                },
-                "tooltip": [
-                    {"field": "Year", "type": "ordinal", "title": "Year"},
-                    {"field": "Records", "type": "quantitative", "title": "Records Exposed", "format": ",.0f"}
-                ]
-            },
-            "width": "container",
-            "height": 400,
-            "config": {
-                "background": "transparent",
-                "axis": {
-                    "labelFont": "Inter, sans-serif",
-                    "titleFont": "Inter, sans-serif"
-                }
-            }
-        },
-        spec3: {
-            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-            "description": "Data breach method categories vs number of incidents",
-            "data": { "values": methodVsCategoryData },
-            "mark": {
-                "type": "circle",
-                "opacity": 0.75,
-                "size": 120,
-                "stroke": "#ffffff",
-                "strokeWidth": 1.5,
-                "tooltip": true
-            },
-            "encoding": {
-                "x": {
-                    "field": "Method Category",
-                    "type": "ordinal",
-                    "axis": {
-                        "title": "Breach Method Category",
-                        "labelAngle": -45,
-                        "labelFontSize": 11
-                    },
-                    "sort": { "field": "Count", "order": "descending" }
-                },
-                "y": {
-                    "field": "Count",
-                    "type": "quantitative",
-                    "axis": {
-                        "title": "Number of Incidents",
-                        "format": "~s",
-                        "labelFontSize": 12
-                    }
-                },
-                "color": {
-                    "field": "Count",
-                    "type": "quantitative",
-                    "scale": {
-                        "range": ["#00f0ff", "#b026ff", "#ff00f5"]
-                    },
-                    "legend": null
-                },
-                "tooltip": [
-                    {"field": "Method Category", "type": "nominal", "title": "Method Category"},
-                    {"field": "Count", "type": "quantitative", "title": "Number of Incidents", "format": ",.0f"},
-                    {"field": "TotalRecords", "type": "quantitative", "title": "Total Records Exposed", "format": ",.0f"}
-                ]
-            },
-            "width": "container",
-            "height": 500,
-            "config": {
-                "background": "transparent",
-                "axis": {
-                    "labelFont": "Inter, sans-serif",
-                    "titleFont": "Inter, sans-serif"
-                },
-                "legend": {
-                    "labelFont": "Inter, sans-serif",
-                    "titleFont": "Inter, sans-serif"
-                }
-            }
-        }
-    };
-}
-
-// Embed visualizations after data is loaded
-async function embedVisualizations() {
-    const success = await loadData();
-    
-    if (!success) {
-        console.error('Failed to load data, visualizations cannot be rendered');
+    if (!canvas) {
+        console.error('Canvas visualization1 not found!');
         return;
     }
     
-    const specs = createVisualizationSpecs();
+    const ctx = canvas.getContext('2d');
+    console.log('Canvas created for Chart 1');
     
-    // Embed all three visualizations
-    vegaEmbed('#visualization1', specs.spec1, {
-        actions: false,
-        renderer: 'svg'
-    }).catch(err => {
-        console.error('Error embedding visualization 1:', err);
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded!');
+        return;
+    }
+    
+    // Aggregate by country and sum affected users
+    const countryMap = new Map();
+    breachData.forEach(breach => {
+        const country = breach.country;
+        const users = breach.affected_users || 0;
+        if (countryMap.has(country)) {
+            countryMap.set(country, countryMap.get(country) + users);
+        } else {
+            countryMap.set(country, users);
+        }
     });
-
-    vegaEmbed('#visualization2', specs.spec2, {
-        actions: false,
-        renderer: 'svg'
-    }).catch(err => {
-        console.error('Error embedding visualization 2:', err);
+    
+    // Sort by affected users and take top 10
+    const sortedData = Array.from(countryMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
+    
+    const labels = sortedData.map(d => d[0]);
+    const data = sortedData.map(d => d[1]);
+    
+    // Create gradient colors for each bar
+    const backgroundColors = sortedData.map((_, i) => {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        if (i < 3) {
+            gradient.addColorStop(0, '#ff00f5');
+            gradient.addColorStop(1, '#b026ff');
+        } else if (i < 6) {
+            gradient.addColorStop(0, '#b026ff');
+            gradient.addColorStop(1, '#00f0ff');
+        } else {
+            gradient.addColorStop(0, '#00f0ff');
+            gradient.addColorStop(1, 'rgba(0, 240, 255, 0.5)');
+        }
+        return gradient;
     });
+    
+    try {
+        chart1 = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Records Exposed',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#00f0ff',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#ff00f5',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyColor: '#ffffff',
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#00f0ff',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            const country = sortedData[context.dataIndex][0];
+                            const users = sortedData[context.dataIndex][1];
+                            return [
+                                `🌍 Country: ${country}`,
+                                `👥 Affected Users: ${formatNumber(users)}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(176, 38, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif'
+                        },
+                        callback: function(value) {
+                            return formatNumber(value);
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif'
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+        });
+        console.log('Chart 1 created successfully!');
+        console.log('Chart 1 object:', chart1);
+        console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+        console.log('Canvas style:', canvas.style.cssText);
+    } catch (error) {
+        console.error('Error creating Chart 1:', error);
+    }
+}
 
-    vegaEmbed('#visualization3', specs.spec3, {
-        actions: false,
-        renderer: 'svg'
-    }).catch(err => {
-        console.error('Error embedding visualization 3:', err);
+// Visualization 2: Timeline Line Chart
+function createChart2() {
+    console.log('Creating Chart 2...');
+    const canvas = document.getElementById('visualization2');
+    
+    if (!canvas) {
+        console.error('Canvas visualization2 not found!');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    console.log('Canvas created for Chart 2');
+    
+    // Aggregate by year
+    const yearMap = new Map();
+    breachData.forEach(breach => {
+        const year = breach.year;
+        const users = breach.affected_users || 0;
+        if (yearMap.has(year)) {
+            yearMap.set(year, yearMap.get(year) + users);
+        } else {
+            yearMap.set(year, users);
+        }
+    });
+    
+    // Sort by year
+    const sortedYears = Array.from(yearMap.entries())
+        .sort((a, b) => a[0] - b[0]);
+    
+    const labels = sortedYears.map(d => d[0]);
+    const data = sortedYears.map(d => d[1]);
+    
+    // Create gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(176, 38, 255, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(255, 0, 245, 0.6)');
+    gradient.addColorStop(1, 'rgba(0, 240, 255, 0.4)');
+    
+    chart2 = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Records Exposed',
+                data: data,
+                borderColor: '#b026ff',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#ff00f5',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#ff00f5',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyColor: '#ffffff',
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#b026ff',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `👥 Affected Users: ${formatNumber(context.parsed.y)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 240, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif'
+                        },
+                        callback: function(value) {
+                            return formatNumber(value);
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(176, 38, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif'
+                        }
+                    }
+                }
+            }
+        }
     });
 }
 
-// Initialize when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait a bit to ensure DOM is fully ready
-    setTimeout(() => {
-        embedVisualizations();
-    }, 100);
-});
+// Visualization 3: Bubble Chart - Breaches by Industry Over Time
+function createChart3() {
+    console.log('Creating Chart 3...');
+    const canvas = document.getElementById('visualization3');
+    
+    if (!canvas) {
+        console.error('Canvas visualization3 not found!');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    console.log('Canvas created for Chart 3');
+    
+    // Industry colors
+    const industryColors = {
+        'IT': 'rgba(0, 240, 255, 0.7)',
+        'Banking': 'rgba(255, 215, 0, 0.7)',
+        'Healthcare': 'rgba(255, 105, 180, 0.7)',
+        'Government': 'rgba(64, 224, 208, 0.7)',
+        'Retail': 'rgba(176, 38, 255, 0.7)',
+        'Education': 'rgba(0, 255, 127, 0.7)',
+        'Telecommunications': 'rgba(147, 112, 219, 0.7)'
+    };
+    
+    // Group data by industry
+    const categoryData = {};
+    breachData.forEach(breach => {
+        const industry = breach.target_industry;
+        if (!categoryData[industry]) {
+            categoryData[industry] = [];
+        }
+        const users = breach.affected_users || 0;
+        categoryData[industry].push({
+            x: breach.year,
+            y: users,
+            r: Math.max(3, Math.min(15, Math.log10(users + 1) * 2)),
+            country: breach.country,
+            attackType: breach.attack_type,
+            financialLoss: breach.financial_loss
+        });
+    });
+    
+    // Create datasets for each industry
+    const datasets = Object.keys(categoryData).map(industry => ({
+        label: industry,
+        data: categoryData[industry],
+        backgroundColor: industryColors[industry] || 'rgba(169, 169, 169, 0.7)',
+        borderColor: (industryColors[industry] || 'rgba(169, 169, 169, 0.7)').replace('0.7', '1'),
+        borderWidth: 2
+    }));
+    
+    chart3 = new Chart(ctx, {
+        type: 'bubble',
+        data: {
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif',
+                            weight: '500'
+                        },
+                        padding: 10,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#ff00f5',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyColor: '#ffffff',
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#00f0ff',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            const data = context.raw;
+                            return [
+                                `🌍 Country: ${data.country}`,
+                                `📅 Year: ${data.x}`,
+                                `👥 Users: ${formatNumber(data.y)}`,
+                                `💰 Loss: $${data.financialLoss}M`,
+                                `⚠️ Attack: ${data.attackType}`
+                            ];
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0, 240, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif'
+                        },
+                        callback: function(value) {
+                            return formatNumber(value);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Affected Users',
+                        color: '#a0aec0',
+                        font: {
+                            size: 12,
+                            family: 'Inter, sans-serif',
+                            weight: 'bold'
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(176, 38, 255, 0.1)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#a0aec0',
+                        font: {
+                            size: 11,
+                            family: 'Inter, sans-serif'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Year',
+                        color: '#a0aec0',
+                        font: {
+                            size: 12,
+                            family: 'Inter, sans-serif',
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
