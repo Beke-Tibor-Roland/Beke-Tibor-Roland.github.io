@@ -24,6 +24,9 @@ body {
     color: var(--text-primary);
     background-color: var(--darker-bg);
     overflow-x: hidden;
+    /* Performance optimizations */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* Animated Background */
@@ -39,6 +42,9 @@ body {
                 radial-gradient(circle at 40% 20%, rgba(255, 0, 245, 0.08) 0%, transparent 50%),
                 var(--dark-bg);
     animation: bgPulse 15s ease-in-out infinite;
+    /* GPU acceleration */
+    will-change: opacity;
+    transform: translateZ(0);
 }
 
 @keyframes bgPulse {
@@ -58,6 +64,9 @@ body {
         linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
     background-size: 50px 50px;
     animation: gridMove 20s linear infinite;
+    /* GPU acceleration */
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 @keyframes gridMove {
@@ -83,6 +92,9 @@ body {
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
     transition: all 0.3s ease;
+    /* GPU acceleration */
+    will-change: box-shadow;
+    transform: translateZ(0);
 }
 
 .navbar.scrolled {
@@ -416,12 +428,16 @@ body {
     padding: 2.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
+    text-align: center;
+    /* GPU acceleration */
+    will-change: transform, border-color;
+    transform: translateZ(0);
 }
 
 .glass-card:hover {
     border-color: var(--neon-cyan);
     box-shadow: 0 8px 32px rgba(0, 240, 255, 0.2);
-    transform: translateY(-5px);
+    transform: translateY(-5px) translateZ(0);
 }
 
 /* Sections */
@@ -491,6 +507,97 @@ body {
 
 .viz-container > div {
     width: 100% !important;
+}
+
+/* Chart Modal Overlay */
+.chart-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 14, 39, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 2rem;
+}
+
+.chart-modal.active {
+    opacity: 1;
+}
+
+.chart-modal-content {
+    background: linear-gradient(135deg, rgba(10, 14, 39, 0.95) 0%, rgba(15, 20, 50, 0.95) 100%);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 1200px;
+    box-shadow: 0 0 50px rgba(0, 240, 255, 0.3),
+                0 0 100px rgba(176, 38, 255, 0.2);
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.chart-modal.active .chart-modal-content {
+    transform: scale(1);
+}
+
+.chart-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.chart-modal-header h2 {
+    color: var(--neon-cyan);
+    font-size: 1.8rem;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.chart-modal-close {
+    background: transparent;
+    border: 2px solid var(--neon-pink);
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--neon-pink);
+    transition: all 0.3s ease;
+}
+
+.chart-modal-close:hover {
+    background: var(--neon-pink);
+    color: var(--dark-bg);
+    box-shadow: 0 0 20px rgba(255, 0, 245, 0.6);
+    transform: rotate(90deg);
+}
+
+.chart-modal-body {
+    width: 100%;
+    min-height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+}
+
+.chart-modal-body canvas {
+    max-width: 100%;
+    max-height: 100%;
 }
 
 /* Chart.js canvas styling */
@@ -632,6 +739,114 @@ body {
     transform: translateY(-3px);
 }
 
+/* Insights Page Styles */
+.insights-section {
+    padding: 4rem 0;
+}
+
+.insight-card {
+    margin-bottom: 3rem;
+    padding: 2.5rem;
+}
+
+.insight-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--glass-border);
+}
+
+.insight-icon {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+}
+
+.insight-header h2 {
+    color: var(--neon-cyan);
+    font-size: 2rem;
+    margin: 0;
+}
+
+.insight-content {
+    color: var(--text-secondary);
+    line-height: 1.8;
+}
+
+.insight-content h3 {
+    color: var(--neon-purple);
+    font-size: 1.5rem;
+    margin: 2rem 0 1rem 0;
+}
+
+.insight-content h4 {
+    color: var(--neon-pink);
+    font-size: 1.2rem;
+    margin: 1rem 0 0.5rem 0;
+}
+
+.insight-content p {
+    margin-bottom: 1.5rem;
+}
+
+.insight-content ul,
+.insight-content ol {
+    margin: 1rem 0 1.5rem 1.5rem;
+}
+
+.insight-content li {
+    margin-bottom: 0.8rem;
+    line-height: 1.7;
+}
+
+.insight-content strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.recommendation {
+    background: rgba(176, 38, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.recommendation:hover {
+    border-color: var(--neon-purple);
+    box-shadow: 0 0 20px rgba(176, 38, 255, 0.2);
+    transform: translateY(-3px);
+}
+
+.cta-section {
+    padding: 4rem 0;
+}
+
+.cta-card {
+    text-align: center;
+    padding: 3rem;
+}
+
+.cta-card h2 {
+    color: var(--neon-cyan);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.cta-card p {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
 /* Responsive Design */
 @media (max-width: 968px) {
     .nav-menu {
@@ -742,4 +957,38 @@ body {
     }
 }
 
+/* Scroll-triggered animations */
+.viz-container,
+.viz-description {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.viz-container.animate-in,
+.viz-description.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.viz-description.animate-in {
+    transition-delay: 0.2s;
+}
+
+/* Chart canvas fade in */
+canvas {
+    animation: fadeIn 1s ease-in;
+    /* GPU acceleration for canvas */
+    transform: translateZ(0);
+    will-change: opacity;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 
