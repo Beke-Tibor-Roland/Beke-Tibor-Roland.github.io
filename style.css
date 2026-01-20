@@ -169,6 +169,67 @@ body {
     width: 100%;
 }
 
+/* Dropdown Menu Styles */
+.nav-dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgba(10, 14, 39, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+    min-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0, 240, 255, 0.2);
+}
+
+.nav-dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu li {
+    list-style: none;
+}
+
+.dropdown-link {
+    display: block;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.dropdown-link:hover {
+    color: var(--neon-cyan);
+    background: rgba(0, 240, 255, 0.1);
+    padding-left: 2rem;
+}
+
+.dropdown-link::before {
+    content: '→';
+    position: absolute;
+    left: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.dropdown-link:hover::before {
+    opacity: 1;
+}
+
 .language-switcher {
     display: flex;
     align-items: center;
@@ -885,6 +946,35 @@ body {
 
     .nav-toggle.active span:nth-child(3) {
         transform: rotate(-45deg) translate(7px, -7px);
+    }
+
+    /* Mobile dropdown */
+    .dropdown-menu {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        border: none;
+        border-top: 1px solid rgba(0, 240, 255, 0.2);
+        border-radius: 0;
+        margin-top: 0.5rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .nav-dropdown:hover .dropdown-menu,
+    .nav-dropdown.active .dropdown-menu {
+        max-height: 400px;
+    }
+
+    .dropdown-link {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+
+    .dropdown-link:hover {
+        padding-left: 1.5rem;
     }
 
     .nav-logo {

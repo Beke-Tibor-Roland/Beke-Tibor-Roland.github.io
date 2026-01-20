@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Breach Intelligence Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,9 +25,17 @@
             <ul class="nav-menu" id="nav-menu">
                 <li><a href="#welcome" class="nav-link">Home</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
-                <li><a href="#viz1" class="nav-link">Viz 1</a></li>
-                <li><a href="#viz2" class="nav-link">Viz 2</a></li>
-                <li><a href="#viz3" class="nav-link">Viz 3</a></li>
+                <li class="nav-dropdown">
+                    <a href="#viz1" class="nav-link">Visualizations</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#viz1" class="dropdown-link">Country Analysis</a></li>
+                        <li><a href="#viz2" class="dropdown-link">Timeline Trends</a></li>
+                        <li><a href="#viz3" class="dropdown-link">Industry Breakdown</a></li>
+                        <li><a href="#viz4" class="dropdown-link">Major Breaches</a></li>
+                        <li><a href="#viz5" class="dropdown-link">Global Heatmap</a></li>
+                        <li><a href="#viz6" class="dropdown-link">Defense Mechanisms</a></li>
+                    </ul>
+                </li>
                 <li><a href="#contact" class="nav-link">Security Check</a></li>
             </ul>
             <div class="language-switcher">
@@ -105,7 +116,7 @@
             <div class="viz-content">
                 <div class="viz-container glass-card">
                     <div class="viz-header">
-                        <h3 class="viz-title">Top 10 Countries by Affected Users</h3>
+                        <h3 class="viz-title">Top 10 Countries by Data Breach Records</h3>
                         <button class="btn-icon" aria-label="Fullscreen">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
@@ -206,6 +217,124 @@
                         user exposure, and the segment distribution highlights which attack types pose the greatest 
                         threat to specific sectors. This visualization empowers security professionals to develop 
                         industry-specific defense strategies based on real-world attack patterns.
+                    </p>
+                    <a href="insights.html" class="btn btn-small">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 4: Treemap -->
+    <section class="viz-section" id="viz4">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Breach Treemap</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Data Breaches by Exposed Records</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <canvas id="visualization4"></canvas>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This treemap visualization displays major data breaches where each rectangle represents a specific 
+                        breach incident. The size of each rectangle is proportional to the number of exposed records, making 
+                        it easy to identify the most significant breaches at a glance. Breaches with larger exposed record 
+                        counts appear as bigger blocks, providing an intuitive visual representation of breach severity. 
+                        The color coding helps distinguish between different breach sources, enabling quick pattern recognition 
+                        across the breach landscape. Hover over any rectangle to see detailed information about the specific 
+                        breach, including the organization name and exact number of records exposed.
+                    </p>
+                    <a href="insights.html" class="btn btn-small">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 5: World Choropleth Map -->
+    <section class="viz-section" id="viz5">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Global Breach Heatmap</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content reverse">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Data Breach Frequency by Country</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization5" style="height: 500px; width: 100%;"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This interactive world map visualizes the geographic distribution of data breach incidents 
+                        across the globe. Countries are color-coded based on breach frequency, with darker shades 
+                        indicating higher numbers of security incidents. The heatmap reveals global cybersecurity 
+                        hotspots and patterns, showing which regions face the most significant cyber threats. This 
+                        geographic perspective helps identify correlations between breach frequency and factors such 
+                        as digital infrastructure development, regulatory frameworks, and threat actor concentration. 
+                        Click on any country to see detailed breach statistics and trends for that specific nation.
+                    </p>
+                    <a href="insights.html" class="btn btn-small">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 6: Defense Mechanisms Doughnut Chart -->
+    <section class="viz-section" id="viz6">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Defense Mechanisms Analysis</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Distribution of Defense Mechanisms Used</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <canvas id="visualization6"></canvas>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This doughnut chart visualizes the distribution of defense mechanisms deployed across all recorded 
+                        data breach incidents. Each segment represents the relative frequency of security tools and strategies 
+                        employed by organizations, including VPNs, Firewalls, AI-based Detection systems, Antivirus software, 
+                        and Encryption technologies. The visualization reveals which defensive measures are most commonly 
+                        implemented in the cybersecurity landscape. Understanding defense mechanism adoption patterns helps 
+                        identify industry trends, evaluate the effectiveness of different security approaches, and highlight 
+                        gaps in organizational security strategies. The proportional sizing allows for quick comparison of 
+                        defense mechanism popularity and can guide security investment decisions.
                     </p>
                     <a href="insights.html" class="btn btn-small">Learn More</a>
                 </div>

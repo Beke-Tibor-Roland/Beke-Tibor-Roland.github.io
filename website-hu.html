@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adattörés Felderítő Irányítópult</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,9 +25,17 @@
             <ul class="nav-menu" id="nav-menu">
                 <li><a href="#welcome" class="nav-link">Kezdőlap</a></li>
                 <li><a href="#about" class="nav-link">Rólunk</a></li>
-                <li><a href="#viz1" class="nav-link">Viz 1</a></li>
-                <li><a href="#viz2" class="nav-link">Viz 2</a></li>
-                <li><a href="#viz3" class="nav-link">Viz 3</a></li>
+                <li class="nav-dropdown">
+                    <a href="#viz1" class="nav-link">Vizualizációk</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#viz1" class="dropdown-link">Országelemzés</a></li>
+                        <li><a href="#viz2" class="dropdown-link">Időbeli Trendek</a></li>
+                        <li><a href="#viz3" class="dropdown-link">Iparági Bontás</a></li>
+                        <li><a href="#viz4" class="dropdown-link">Nagy Adatszivárgások</a></li>
+                        <li><a href="#viz5" class="dropdown-link">Globális Hőtérkép</a></li>
+                        <li><a href="#viz6" class="dropdown-link">Védelmi Mechanizmusok</a></li>
+                    </ul>
+                </li>
                 <li><a href="#contact" class="nav-link">Biztonsági Ellenőrzés</a></li>
             </ul>
             <div class="language-switcher">
@@ -169,7 +180,7 @@
                         kulcsfontosságú betekintést nyújtva a jövőbeli trendek előrejelzéséhez és a 
                         kiberbiztonsági erőforrások hatékony allokálásához.
                     </p>
-                    <button class="btn btn-small">További információk</button>
+                    <a href="insights-hu.html" class="btn btn-small">További információk</a>
                 </div>
             </div>
         </div>
@@ -188,7 +199,7 @@
             <div class="viz-content">
                 <div class="viz-container glass-card">
                     <div class="viz-header">
-                        <h3 class="viz-title">Támadási Típusok Iparági Szektorok Szerint</h3>
+                        <h3 class="viz-title">Támadási Típusok Iparági Szektor Szerint</h3>
                         <button class="btn-icon" aria-label="Teljes képernyő">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
@@ -212,6 +223,128 @@
                         fenyegetést az adott szektorokra. Ez a vizualizáció felhatalmazást ad a biztonsági 
                         szakembereknek iparág-specifikus védelmi stratégiák kidolgozására a valós támadási 
                         mintázatok alapján.
+                    </p>
+                    <a href="insights-hu.html" class="btn btn-small">További információk</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 4: Treemap -->
+    <section class="viz-section" id="viz4">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Adatszivárgások Térképe</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Adattörések Kitett Rekordok Szerint</h3>
+                        <button class="btn-icon" aria-label="Teljes képernyő">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <canvas id="visualization4"></canvas>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Elemzés</h3>
+                    <p>
+                        Ez a treemap vizualizáció fő adattöréseket jelenít meg, ahol minden téglalap 
+                        egy konkrét szivárgási eseményt képvisel. Minden téglalap mérete arányos a kitett rekordok 
+                        számával, így egyszerűvé teszi a legjelentősebb szivárgások azonnali azonosítását. A nagyobb 
+                        kitett rekordszámú szivárgások nagyobb blokkként jelennek meg, intuitív vizuális 
+                        ábrázolást nyújtva a szivárgás súlyosságáról. A színkódolás segít a különböző szivárgási 
+                        források megkülönböztetésében, lehetővé téve a gyors mintázatfelismerést a szivárgási 
+                        környezetben. Vigye az egeret bármelyik téglalapra a konkrét szivárgásról szóló részletes 
+                        információkért, beleértve a szervezet nevét és a kitett rekordok pontos számát.
+                    </p>
+                    <a href="insights-hu.html" class="btn btn-small">További információk</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 5: Világ Choropleth Térkép -->
+    <section class="viz-section" id="viz5">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Globális Szivárgási Hőtérkép</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content reverse">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Adattörések Gyakorisága Országonként</h3>
+                        <button class="btn-icon" aria-label="Teljes képernyő">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="visualization5" style="height: 500px; width: 100%;"></div>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Elemzés</h3>
+                    <p>
+                        Ez az interaktív világtérkép az adatszivárgási incidensek földrajzi eloszlását 
+                        vizualizálja világszerte. Az országok színkódolása a szivárgások gyakoriságán alapul, 
+                        a sötétebb árnyalatok magasabb számú biztonsági incidenseket jeleznek. A hőtérkép 
+                        feltárja a globális kiberbiztonság forró pontjait és mintáit, megmutatva mely régiók 
+                        szembesülnek a legjelentősebb kiberfenyegetésekkel. Ez a földrajzi perspektíva segít 
+                        azonosítani a korrelációkat a szivárgások gyakorisága és olyan tényezők között, mint a 
+                        digitális infrastruktúra fejlettsége, szabályozási keretek és fenyegető szereplők 
+                        koncentrációja. Kattintson bármelyik országra a részletes szivárgási statisztikák és 
+                        trendek megtekintéséhez.
+                    </p>
+                    <a href="insights-hu.html" class="btn btn-small">További információk</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 6: Védelmi Mechanizmusok Fánk Diagram -->
+    <section class="viz-section" id="viz6">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Védelmi Mechanizmusok Elemzése</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Használt Védelmi Mechanizmusok Eloszlása</h3>
+                        <button class="btn-icon" aria-label="Teljes képernyő">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <canvas id="visualization6"></canvas>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Elemzés</h3>
+                    <p>
+                        Ez a fánk diagram vizualizálja az összes rögzített adattörési incidensben alkalmazótt 
+                        védelmi mechanizmusok eloszlását. Minden szegmens a biztonsági eszközök és stratégiák 
+                        relatív gyakoriságát képviseili, beleértve a VPN-eket, Tűzfalakat, MI-alapú észlelési 
+                        rendszereket, Vírusvédelmi szoftvereket és Titkosítási technológiákat. A vizualizáció 
+                        feltárja, mely védelmező intézkedéseket alkalmazzák leggyakrabban a kiberbiztonsági 
+                        környezetben. A védelmi mechanizmusok elfogadási mintáinak megértése segít azonosítani 
+                        az iparági trendeket, értékelni a különböző biztonsági megközelítések hatékonyságát és 
+                        kiemelni a szervezeti biztonsági stratégiák hiányosságait. Az arányos méretezés lehetővé 
+                        teszi a védelmi mechanizmusok népszerűségének gyors összehasonlítását.
                     </p>
                     <a href="insights-hu.html" class="btn btn-small">További információk</a>
                 </div>

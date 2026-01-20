@@ -4,17 +4,43 @@ document.addEventListener('DOMContentLoaded', async function() {
     const navToggle = document.getElementById('nav-toggle');
     const navMenu = document.getElementById('nav-menu');
     const navLinks = document.querySelectorAll('.nav-link');
+    const dropdownLinks = document.querySelectorAll('.dropdown-link');
 
     navToggle.addEventListener('click', () => {
         navToggle.classList.toggle('active');
         navMenu.classList.toggle('active');
     });
 
+    // Mobile dropdown toggle
+    const navDropdown = document.querySelector('.nav-dropdown');
+    if (navDropdown && window.innerWidth <= 968) {
+        const dropdownTrigger = navDropdown.querySelector('.nav-link');
+        dropdownTrigger.addEventListener('click', (e) => {
+            if (window.innerWidth <= 968) {
+                e.preventDefault();
+                navDropdown.classList.toggle('active');
+            }
+        });
+    }
+
     // Close menu when clicking on a link
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
+            if (!link.closest('.nav-dropdown')) {
+                navToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+        });
+    });
+
+    // Close menu when clicking dropdown links
+    dropdownLinks.forEach(link => {
+        link.addEventListener('click', () => {
             navToggle.classList.remove('active');
             navMenu.classList.remove('active');
+            if (navDropdown) {
+                navDropdown.classList.remove('active');
+            }
         });
     });
 
@@ -72,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // Fetch data from GitHub API and create charts
     breachData = await fetchBreachData();
+    xposedBreachData = await fetchXposedBreachData();
     
     if (breachData.length === 0) {
         console.error('No data available to display');
@@ -87,18 +114,36 @@ document.addEventListener('DOMContentLoaded', async function() {
     const chartObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const canvas = entry.target;
-                const canvasId = canvas.id;
+                const element = entry.target;
+                const elementId = element.id;
                 
-                if (canvasId === 'visualization1' && !chart1) {
+                console.log('Element visible:', elementId);
+                
+                if (elementId === 'visualization1' && !chart1) {
+                    console.log('Creating Chart 1...');
+                    chartObserver.unobserve(element);
                     createChart1();
-                } else if (canvasId === 'visualization2' && !chart2) {
+                } else if (elementId === 'visualization2' && !chart2) {
+                    console.log('Creating Chart 2...');
+                    chartObserver.unobserve(element);
                     createChart2();
-                } else if (canvasId === 'visualization3' && !chart3) {
+                } else if (elementId === 'visualization3' && !chart3) {
+                    console.log('Creating Chart 3...');
+                    chartObserver.unobserve(element);
                     createChart3();
+                } else if (elementId === 'visualization4' && !chart4) {
+                    console.log('Creating Chart 4...');
+                    chartObserver.unobserve(element);
+                    createChart4();
+                } else if (elementId === 'visualization5' && !map5) {
+                    console.log('Creating Map 5...');
+                    chartObserver.unobserve(element);
+                    createMap5();
+                } else if (elementId === 'visualization6' && !chart6) {
+                    console.log('Creating Chart 6...');
+                    chartObserver.unobserve(element);
+                    createChart6();
                 }
-                
-                chartObserver.unobserve(canvas);
             }
         });
     }, {
@@ -106,9 +151,12 @@ document.addEventListener('DOMContentLoaded', async function() {
         rootMargin: '100px'
     });
     
-    // Observe all chart canvases
-    document.querySelectorAll('#visualization1, #visualization2, #visualization3').forEach(canvas => {
-        chartObserver.observe(canvas);
+    // Observe all chart canvases and map containers
+    const elementsToObserve = document.querySelectorAll('#visualization1, #visualization2, #visualization3, #visualization4, #visualization5, #visualization6');
+    console.log('Elements found to observe:', elementsToObserve.length);
+    elementsToObserve.forEach(element => {
+        console.log('Observing:', element.id, element.tagName);
+        chartObserver.observe(element);
     });
     
     // Setup chart zoom modal
@@ -122,11 +170,12 @@ function setupChartZoom() {
     zoomButtons.forEach((button, index) => {
         button.addEventListener('click', () => {
             const vizContainer = button.closest('.viz-container');
-            const canvasId = vizContainer.querySelector('canvas').id;
+            const canvasOrMap = vizContainer.querySelector('canvas') || vizContainer.querySelector('#visualization5');
+            const vizId = canvasOrMap ? canvasOrMap.id : null;
             const title = vizContainer.querySelector('.viz-title').textContent;
             
-            // Determine which chart to recreate
-            let chartNumber = parseInt(canvasId.replace('visualization', ''));
+            // Determine which chart/map to recreate
+            let chartNumber = parseInt(vizId.replace('visualization', ''));
             openChartModal(chartNumber, title);
         });
     });
@@ -136,37 +185,69 @@ function openChartModal(chartNumber, title) {
     // Create modal overlay
     const modal = document.createElement('div');
     modal.className = 'chart-modal';
-    modal.innerHTML = `
-        <div class="chart-modal-content">
-            <div class="chart-modal-header">
-                <h2>${title}</h2>
-                <button class="chart-modal-close" aria-label="Close">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
+    
+    // For map (viz5), create different modal content
+    if (chartNumber === 5) {
+        modal.innerHTML = `
+            <div class="chart-modal-content">
+                <div class="chart-modal-header">
+                    <h2>${title}</h2>
+                    <button class="chart-modal-close" aria-label="Close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="chart-modal-body">
+                    <div id="modal-map" style="height: 100%; width: 100%;"></div>
+                </div>
             </div>
-            <div class="chart-modal-body">
-                <canvas id="modal-canvas"></canvas>
+        `;
+    } else {
+        modal.innerHTML = `
+            <div class="chart-modal-content">
+                <div class="chart-modal-header">
+                    <h2>${title}</h2>
+                    <button class="chart-modal-close" aria-label="Close">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="chart-modal-body">
+                    <canvas id="modal-canvas"></canvas>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    }
     
     document.body.appendChild(modal);
     
-    // Recreate the chart in modal with larger size
-    const modalCanvas = modal.querySelector('#modal-canvas');
-    const ctx = modalCanvas.getContext('2d');
-    
-    // Create chart based on number
+    // Create chart/map based on number
     let modalChart;
-    if (chartNumber === 1) {
-        modalChart = createModalChart1(ctx);
-    } else if (chartNumber === 2) {
-        modalChart = createModalChart2(ctx);
-    } else if (chartNumber === 3) {
-        modalChart = createModalChart3(ctx);
+    let modalMap;
+    
+    if (chartNumber === 5) {
+        // Recreate map in modal
+        setTimeout(() => createModalMap5(), 100);
+    } else {
+        // Recreate the chart in modal with larger size
+        const modalCanvas = modal.querySelector('#modal-canvas');
+        const ctx = modalCanvas.getContext('2d');
+        
+        if (chartNumber === 1) {
+            modalChart = createModalChart1(ctx);
+        } else if (chartNumber === 2) {
+            modalChart = createModalChart2(ctx);
+        } else if (chartNumber === 3) {
+            modalChart = createModalChart3(ctx);
+        } else if (chartNumber === 4) {
+            modalChart = createModalChart4(ctx);
+        } else if (chartNumber === 6) {
+            createModalChart6();
+        }
     }
     
     // Close modal handlers
@@ -174,6 +255,9 @@ function openChartModal(chartNumber, title) {
     const closeHandler = () => {
         if (modalChart) {
             modalChart.destroy();
+        }
+        if (modalMap) {
+            modalMap.remove();
         }
         closeChartModal(modal);
     };
@@ -202,6 +286,121 @@ function openChartModal(chartNumber, title) {
 function closeChartModal(modal) {
     modal.classList.remove('active');
     setTimeout(() => modal.remove(), 300);
+}
+
+// Modal Chart 4 - Treemap for modal
+function createModalChart4(ctx) {
+    if (!xposedBreachData || xposedBreachData.length === 0) {
+        console.warn('No xposed breach data available for modal treemap');
+        return null;
+    }
+    
+    const sortedBreaches = xposedBreachData
+        .filter(breach => {
+            return breach.exposedRecords && 
+                   breach.exposedRecords > 0 &&
+                   breach.domain &&
+                   breach.domain !== '';
+        })
+        .sort((a, b) => b.exposedRecords - a.exposedRecords)
+        .slice(0, 10);
+    
+    const treemapData = sortedBreaches.map(breach => {
+        let breachDate = 'Unknown';
+        if (breach.breachedDate) {
+            try {
+                breachDate = new Date(breach.breachedDate).toLocaleDateString();
+            } catch (e) {
+                breachDate = 'Unknown';
+            }
+        }
+        
+        return {
+            breach: breach.breachID || 'Unknown',
+            value: breach.exposedRecords || 0,
+            domain: breach.domain || 'N/A',
+            industry: breach.industry || 'Unknown',
+            date: breachDate
+        };
+    });
+    
+    const colorPalette = [
+        'rgba(255, 99, 132, 0.8)',   'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 206, 86, 0.8)',   'rgba(75, 192, 192, 0.8)',
+        'rgba(153, 102, 255, 0.8)',  'rgba(255, 159, 64, 0.8)',
+        'rgba(231, 76, 60, 0.8)',    'rgba(46, 204, 113, 0.8)',
+        'rgba(155, 89, 182, 0.8)',   'rgba(52, 152, 219, 0.8)'
+    ];
+    
+    const colors = treemapData.map((d, index) => colorPalette[index % colorPalette.length]);
+    
+    return new Chart(ctx, {
+        type: 'treemap',
+        data: {
+            datasets: [{
+                label: 'Data Breaches',
+                tree: treemapData,
+                key: 'value',
+                groups: ['breach'],
+                backgroundColor: (ctx) => {
+                    if (ctx.type !== 'data') return 'transparent';
+                    return colors[ctx.dataIndex];
+                },
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                spacing: 1,
+                labels: {
+                    display: true,
+                    formatter: (ctx) => {
+                        if (ctx.type !== 'data') return '';
+                        const area = ctx.raw.w * ctx.raw.h;
+                        if (area < 2000) return '';
+                        const data = ctx.raw._data;
+                        return [data.breach, formatNumber(data.value)];
+                    },
+                    color: '#ffffff',
+                    font: { size: 11, weight: 'bold', family: 'Inter, sans-serif' }
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
+            animation: { duration: 1000, easing: 'easeOutQuart' },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#ff00f5',
+                    titleFont: { size: 16, weight: 'bold' },
+                    bodyColor: '#ffffff',
+                    bodyFont: { size: 14 },
+                    borderColor: '#00f0ff',
+                    borderWidth: 1,
+                    padding: 15,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            const raw = context[0].raw;
+                            const data = raw._data || raw.data || raw;
+                            return data.breach || raw.g || 'Unknown';
+                        },
+                        label: function(context) {
+                            const idx = context.dataIndex;
+                            const originalData = treemapData[idx];
+                            return [
+                                `🔒 Exposed Records: ${formatNumber(originalData.value)}`,
+                                `🌐 Domain: ${originalData.domain}`,
+                                `🏢 Industry: ${originalData.industry}`,
+                                `📅 Date: ${originalData.date}`
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 // Modal Chart 1 - Same as createChart1 but for modal
@@ -575,7 +774,8 @@ function scrollToSection(sectionId) {
 
 // Global data storage
 let breachData = [];
-let chart1, chart2, chart3;
+let xposedBreachData = [];
+let chart1, chart2, chart3, chart4, chart6, map5;
 
 // Fetch breach data from your GitHub API with caching
 async function fetchBreachData() {
@@ -635,6 +835,63 @@ async function fetchBreachData() {
         console.error('Error fetching breach data:', error);
         console.error('Error details:', error.message);
         alert('Failed to load breach data. Please check your internet connection or API configuration.\n\nError: ' + error.message);
+        return [];
+    }
+}
+
+// Fetch breach data from xposedornot.com API
+async function fetchXposedBreachData() {
+    try {
+        // Check localStorage cache (24 hour expiry)
+        const cacheKey = 'xposedBreachData_cache';
+        const cacheTimeKey = 'xposedBreachData_cache_time';
+        const cacheExpiry = 24 * 60 * 60 * 1000; // 24 hours
+        
+        const cachedData = localStorage.getItem(cacheKey);
+        const cacheTime = localStorage.getItem(cacheTimeKey);
+        
+        if (cachedData && cacheTime) {
+            const age = Date.now() - parseInt(cacheTime);
+            if (age < cacheExpiry) {
+                console.log('✓ Using cached xposed breach data');
+                return JSON.parse(cachedData);
+            }
+        }
+        
+        console.log('Fetching breach data from xposedornot.com...');
+        const response = await fetch('https://api.xposedornot.com/v1/breaches', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const jsonData = await response.json();
+        
+        if (jsonData.status !== 'success' || !jsonData.exposedBreaches) {
+            throw new Error('Unexpected response format from xposedornot API');
+        }
+        
+        const breaches = jsonData.exposedBreaches;
+        console.log(`✓ Loaded ${breaches.length} breach records from xposedornot`);
+        
+        // Cache the data
+        try {
+            localStorage.setItem(cacheKey, JSON.stringify(breaches));
+            localStorage.setItem(cacheTimeKey, Date.now().toString());
+            console.log('✓ Xposed data cached for 24 hours');
+        } catch (e) {
+            console.warn('Could not cache xposed data:', e);
+        }
+        
+        return breaches;
+    } catch (error) {
+        console.error('Error fetching xposed breach data:', error);
+        console.warn('Using empty dataset for treemap');
         return [];
     }
 }
@@ -1151,4 +1408,851 @@ function createChart3() {
             }
         }
     });
+}
+// Visualization 4: Treemap Chart from xposedornot.com API
+function createChart4() {
+    console.log('Creating Chart 4 (Treemap)...');
+    const canvas = document.getElementById('visualization4');
+    
+    if (!canvas) {
+        console.error('Canvas visualization4 not found!');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    console.log('Canvas created for Chart 4');
+    
+    if (!xposedBreachData || xposedBreachData.length === 0) {
+        console.warn('No xposed breach data available for treemap');
+        return;
+    }
+    
+    // Filter and sort breaches by exposedRecords, only keep ones with domain
+    const sortedBreaches = xposedBreachData
+        .filter(breach => {
+            return breach.exposedRecords && 
+                   breach.exposedRecords > 0 &&
+                   breach.domain &&
+                   breach.domain !== '';
+        })
+        .sort((a, b) => b.exposedRecords - a.exposedRecords)
+        .slice(0, 10);
+    
+    console.log(`Creating treemap with ${sortedBreaches.length} breaches`);
+    console.log('First breach sample:', sortedBreaches[0]);
+    
+    // Prepare data for treemap - store all breach data with proper null checks
+    const treemapData = sortedBreaches.map(breach => {
+        let breachDate = 'Unknown';
+        if (breach.breachedDate) {
+            try {
+                breachDate = new Date(breach.breachedDate).toLocaleDateString();
+            } catch (e) {
+                breachDate = 'Unknown';
+            }
+        }
+        
+        return {
+            breach: breach.breachID || 'Unknown',
+            value: breach.exposedRecords || 0,
+            domain: breach.domain || 'N/A',
+            industry: breach.industry || 'Unknown',
+            date: breachDate
+        };
+    });
+    
+    console.log('Treemap data sample:', treemapData[0]);
+    
+    // Generate distinct colors for each breach
+    const colorPalette = [
+        'rgba(255, 99, 132, 0.8)',   // Red
+        'rgba(54, 162, 235, 0.8)',   // Blue
+        'rgba(255, 206, 86, 0.8)',   // Yellow
+        'rgba(75, 192, 192, 0.8)',   // Teal
+        'rgba(153, 102, 255, 0.8)',  // Purple
+        'rgba(255, 159, 64, 0.8)',   // Orange
+        'rgba(231, 76, 60, 0.8)',    // Dark Red
+        'rgba(46, 204, 113, 0.8)',   // Green
+        'rgba(155, 89, 182, 0.8)',   // Violet
+        'rgba(52, 152, 219, 0.8)'    // Light Blue
+    ];
+    
+    const colors = treemapData.map((d, index) => colorPalette[index % colorPalette.length]);
+    
+    chart4 = new Chart(ctx, {
+        type: 'treemap',
+        data: {
+            datasets: [{
+                label: 'Data Breaches',
+                tree: treemapData,
+                key: 'value',
+                groups: ['breach'],
+                backgroundColor: (ctx) => {
+                    if (ctx.type !== 'data') return 'transparent';
+                    return colors[ctx.dataIndex];
+                },
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                spacing: 1,
+                labels: {
+                    display: true,
+                    formatter: (ctx) => {
+                        if (ctx.type !== 'data') return '';
+                        
+                        // Only show label if the box is large enough
+                        const area = ctx.raw.w * ctx.raw.h;
+                        if (area < 2000) return '';
+                        
+                        const data = ctx.raw._data;
+                        return [data.breach, formatNumber(data.value)];
+                    },
+                    color: '#ffffff',
+                    font: {
+                        size: 11,
+                        weight: 'bold',
+                        family: 'Inter, sans-serif'
+                    }
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart',
+                resize: {
+                    duration: 0
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                    titleColor: '#ff00f5',
+                    titleFont: {
+                        size: 14,
+                        weight: 'bold'
+                    },
+                    bodyColor: '#ffffff',
+                    bodyFont: {
+                        size: 13
+                    },
+                    borderColor: '#00f0ff',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        title: function(context) {
+                            const raw = context[0].raw;
+                            console.log('Full raw object:', raw);
+                            console.log('Raw keys:', Object.keys(raw));
+                            
+                            // Try different possible locations for the data
+                            const data = raw._data || raw.data || raw;
+                            return data.breach || raw.g || 'Unknown';
+                        },
+                        label: function(context) {
+                            const raw = context.raw;
+                            console.log('Label raw object:', raw);
+                            
+                            // Find the original data - it might be in different locations
+                            const idx = context.dataIndex;
+                            const originalData = treemapData[idx];
+                            
+                            console.log('Original data from array:', originalData);
+                            
+                            return [
+                                `🔒 Exposed Records: ${formatNumber(originalData.value)}`,
+                                `🌐 Domain: ${originalData.domain}`,
+                                `🏢 Industry: ${originalData.industry}`,
+                                `📅 Date: ${originalData.date}`
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    console.log('Chart 4 (Treemap) created successfully!');
+}
+
+// Visualization 5: World Choropleth Map showing breach frequency by country
+async function createMap5() {
+    console.log('Creating Map 5 (Choropleth)...');
+    
+    try {
+        // Fetch and parse CSV data
+        const response = await fetch('data/data_breaches_global.csv');
+        const csvText = await response.text();
+        
+        // Parse CSV manually
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',');
+        const countryIndex = headers.indexOf('Country');
+        
+        // Country name mapping to match GeoJSON names
+        const countryNameMap = {
+            'USA': 'United States of America',
+            'US': 'United States of America',
+            'United States': 'United States of America',
+            'UK': 'United Kingdom',
+            'Russia': 'Russian Federation',
+            'South Korea': 'Republic of Korea',
+            'North Korea': "Democratic People's Republic of Korea",
+            'Vietnam': 'Viet Nam',
+            'Iran': 'Iran (Islamic Republic of)',
+            'Syria': 'Syrian Arab Republic',
+            'Venezuela': 'Venezuela (Bolivarian Republic of)',
+            'Bolivia': 'Bolivia (Plurinational State of)',
+            'Tanzania': 'United Republic of Tanzania',
+            'Moldova': 'Republic of Moldova',
+            'Czech Republic': 'Czechia',
+            'Macedonia': 'North Macedonia',
+            'Ivory Coast': "Côte d'Ivoire",
+            'East Timor': 'Timor-Leste',
+            'Laos': "Lao People's Democratic Republic"
+        };
+        
+        // Reverse mapping: CSV name -> GeoJSON name
+        const reverseMap = {
+            'Russian Federation': 'Russia'
+        };
+        
+        // Count breach frequency by country
+        const countryBreaches = {};
+        const countryBreachesForGeoJSON = {}; // Store with GeoJSON names
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim() === '') continue;
+            const values = lines[i].split(',');
+            let country = values[countryIndex];
+            if (country) {
+                // Normalize country name from CSV
+                country = countryNameMap[country] || country;
+                countryBreaches[country] = (countryBreaches[country] || 0) + 1;
+                
+                // Also store with GeoJSON name if different
+                const geoJsonName = reverseMap[country] || country;
+                countryBreachesForGeoJSON[geoJsonName] = (countryBreachesForGeoJSON[geoJsonName] || 0) + 1;
+            }
+        }
+        
+        console.log('Country breach frequencies:', countryBreaches);
+        console.log('All CSV countries:', Object.keys(countryBreaches).sort());
+        console.log('Breach counts:', countryBreaches);
+        console.log('GeoJSON-ready breach counts:', countryBreachesForGeoJSON);
+        
+        // Initialize Leaflet map
+        map5 = L.map('visualization5').setView([20, 0], 2);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map5);
+        
+        // Fetch GeoJSON data for country boundaries
+        const geoResponse = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+        const geoData = await geoResponse.json();
+        
+        // Debug: Log GeoJSON country names
+        console.log('GeoJSON countries sample:', geoData.features.slice(0, 10).map(f => f.properties.ADMIN || f.properties.name));
+        console.log('Looking for Russia in GeoJSON...');
+        const russiaFeature = geoData.features.find(f => 
+            (f.properties.ADMIN && f.properties.ADMIN.toLowerCase().includes('russia')) ||
+            (f.properties.name && f.properties.name.toLowerCase().includes('russia'))
+        );
+        console.log('Russia feature found:', russiaFeature ? (russiaFeature.properties.ADMIN || russiaFeature.properties.name) : 'NOT FOUND');
+        
+        // Find max breach count for color scaling
+        const maxBreaches = Math.max(...Object.values(countryBreaches));
+        const minBreaches = Math.min(...Object.values(countryBreaches).filter(v => v > 0));
+        
+        console.log('Breach count range:', minBreaches, 'to', maxBreaches);
+        
+        // Function to get color based on breach count
+        // Uses logarithmic scale for better distribution
+        function getColor(count) {
+            if (!count) return '#1a1f3a'; // Dark background for no data
+            
+            // Use log scale for better color distribution
+            const logMin = Math.log(minBreaches);
+            const logMax = Math.log(maxBreaches);
+            const logCount = Math.log(count);
+            const intensity = (logCount - logMin) / (logMax - logMin);
+            
+            // Gradient: cyan (#00f0ff) -> purple (#b026ff) -> pink (#ff00f5)
+            if (intensity < 0.5) {
+                // Cyan to Purple
+                const t = intensity * 2; // 0 to 1
+                const r = Math.floor(0 + t * 176);
+                const g = Math.floor(240 - t * 202);
+                const b = Math.floor(255);
+                return `rgb(${r}, ${g}, ${b})`;
+            } else {
+                // Purple to Pink
+                const t = (intensity - 0.5) * 2; // 0 to 1
+                const r = Math.floor(176 + t * 79);
+                const g = Math.floor(38 - t * 38);
+                const b = Math.floor(255 - t * 10);
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+        }
+        
+        // Style function for countries
+        function style(feature) {
+            const countryName = feature.properties.ADMIN || feature.properties.name;
+            const breachCount = countryBreachesForGeoJSON[countryName] || 0;
+            
+            // Debug logging for specific countries
+            if (countryName && (countryName.includes('Russia') || countryName.includes('United States') || countryName.includes('China'))) {
+                console.log(`Style for ${countryName}: ${breachCount} breaches, color: ${getColor(breachCount)}`);
+            }
+            
+            return {
+                fillColor: getColor(breachCount),
+                weight: 1,
+                opacity: 0.8,
+                color: '#00f0ff',
+                fillOpacity: 0.7
+            };
+        }
+        
+        // Highlight feature on hover
+        function highlightFeature(e) {
+            const layer = e.target;
+            layer.setStyle({
+                weight: 2,
+                color: '#ff00f5',
+                fillOpacity: 0.9
+            });
+            layer.bringToFront();
+        }
+        
+        // Reset highlight
+        function resetHighlight(e) {
+            geoJsonLayer.resetStyle(e.target);
+        }
+        
+        // Click handler
+        function onCountryClick(e) {
+            const countryName = e.target.feature.properties.ADMIN || e.target.feature.properties.name;
+            const breachCount = countryBreaches[countryName] || 0;
+            
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`
+                    <div style="color: #ffffff; font-family: Inter, sans-serif;">
+                        <strong style="color: #ff00f5; font-size: 16px;">${countryName}</strong><br>
+                        <span style="color: #00f0ff;">Data Breaches:</span> <strong>${breachCount.toLocaleString()}</strong>
+                    </div>
+                `)
+                .openOn(map5);
+        }
+        
+        // Add each feature
+        function onEachFeature(feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: onCountryClick
+            });
+        }
+        
+        // Add GeoJSON layer
+        const geoJsonLayer = L.geoJson(geoData, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(map5);
+        
+        // Debug: Count how many countries got colored
+        let coloredCount = 0;
+        let matchedCountries = [];
+        geoData.features.forEach(feature => {
+            const name = feature.properties.ADMIN || feature.properties.name;
+            if (countryBreachesForGeoJSON[name]) {
+                coloredCount++;
+                matchedCountries.push(name);
+            }
+        });
+        console.log(`Colored ${coloredCount} countries out of 10 in CSV`);
+        console.log('Matched countries:', matchedCountries);
+        console.log('CSV countries that did NOT match:', 
+            Object.keys(countryBreaches).filter(c => !matchedCountries.includes(c) && !matchedCountries.includes(reverseMap[c])));
+        
+        // Add legend
+        const legend = L.control({ position: 'bottomright' });
+        
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.style.background = 'rgba(10, 14, 39, 0.9)';
+            div.style.padding = '10px';
+            div.style.borderRadius = '8px';
+            div.style.border = '1px solid #00f0ff';
+            div.style.color = '#ffffff';
+            div.style.fontFamily = 'Inter, sans-serif';
+            div.style.fontSize = '12px';
+            
+            const grades = [0, Math.floor(maxBreaches * 0.25), Math.floor(maxBreaches * 0.5), Math.floor(maxBreaches * 0.75), maxBreaches];
+            
+            div.innerHTML = '<strong style="color: #ff00f5;">Breach Frequency</strong><br>';
+            
+            for (let i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + getColor(grades[i] + 1) + '; width: 18px; height: 18px; display: inline-block; margin-right: 5px; border: 1px solid #00f0ff;"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }
+            
+            return div;
+        };
+        
+        legend.addTo(map5);
+        
+        console.log('Map 5 (Choropleth) created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating Map 5:', error);
+    }
+}
+
+// Create modal version of Map 5
+async function createModalMap5() {
+    console.log('Creating Modal Map 5...');
+    
+    try {
+        // Fetch and parse CSV data
+        const response = await fetch('data/data_breaches_global.csv');
+        const csvText = await response.text();
+        
+        // Parse CSV manually
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',');
+        const countryIndex = headers.indexOf('Country');
+        
+        // Country name mapping
+        const countryNameMap = {
+            'USA': 'United States of America',
+            'US': 'United States of America',
+            'United States': 'United States of America',
+            'UK': 'United Kingdom',
+            'Russia': 'Russian Federation',
+            'South Korea': 'Republic of Korea',
+            'North Korea': "Democratic People's Republic of Korea",
+            'Vietnam': 'Viet Nam',
+            'Iran': 'Iran (Islamic Republic of)',
+            'Syria': 'Syrian Arab Republic',
+            'Venezuela': 'Venezuela (Bolivarian Republic of)',
+            'Bolivia': 'Bolivia (Plurinational State of)',
+            'Tanzania': 'United Republic of Tanzania',
+            'Moldova': 'Republic of Moldova',
+            'Czech Republic': 'Czechia',
+            'Macedonia': 'North Macedonia',
+            'Ivory Coast': "Côte d'Ivoire",
+            'East Timor': 'Timor-Leste',
+            'Laos': "Lao People's Democratic Republic"
+        };
+        
+        // Count breach frequency by country
+        const countryBreaches = {};
+        for (let i = 1; i < lines.length; i++) {
+            if (lines[i].trim() === '') continue;
+            const values = lines[i].split(',');
+            let country = values[countryIndex];
+            if (country) {
+                country = countryNameMap[country] || country;
+                countryBreaches[country] = (countryBreaches[country] || 0) + 1;
+            }
+        }
+        
+        // Initialize Leaflet map in modal
+        const modalMap = L.map('modal-map').setView([20, 0], 2);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(modalMap);
+        
+        // Fetch GeoJSON data
+        const geoResponse = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
+        const geoData = await geoResponse.json();
+        
+        // Find max breach count
+        const maxBreaches = Math.max(...Object.values(countryBreaches));
+        const minBreaches = Math.min(...Object.values(countryBreaches).filter(v => v > 0));
+        
+        // Color function with logarithmic scale
+        function getColor(count) {
+            if (!count) return '#1a1f3a';
+            
+            const logMin = Math.log(minBreaches);
+            const logMax = Math.log(maxBreaches);
+            const logCount = Math.log(count);
+            const intensity = (logCount - logMin) / (logMax - logMin);
+            
+            // Gradient: cyan (#00f0ff) -> purple (#b026ff) -> pink (#ff00f5)
+            if (intensity < 0.5) {
+                const t = intensity * 2;
+                const r = Math.floor(0 + t * 176);
+                const g = Math.floor(240 - t * 202);
+                const b = Math.floor(255);
+                return `rgb(${r}, ${g}, ${b})`;
+            } else {
+                const t = (intensity - 0.5) * 2;
+                const r = Math.floor(176 + t * 79);
+                const g = Math.floor(38 - t * 38);
+                const b = Math.floor(255 - t * 10);
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+        }
+        
+        // Style function
+        function style(feature) {
+            const countryName = feature.properties.ADMIN || feature.properties.name;
+            const breachCount = countryBreaches[countryName] || 0;
+            
+            return {
+                fillColor: getColor(breachCount),
+                weight: 1,
+                opacity: 0.8,
+                color: '#00f0ff',
+                fillOpacity: 0.7
+            };
+        }
+        
+        // Event handlers
+        function highlightFeature(e) {
+            const layer = e.target;
+            layer.setStyle({
+                weight: 2,
+                color: '#ff00f5',
+                fillOpacity: 0.9
+            });
+            layer.bringToFront();
+        }
+        
+        function resetHighlight(e) {
+            geoJsonLayer.resetStyle(e.target);
+        }
+        
+        function onCountryClick(e) {
+            const countryName = e.target.feature.properties.ADMIN || e.target.feature.properties.name;
+            const breachCount = countryBreaches[countryName] || 0;
+            
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`
+                    <div style="color: #ffffff; font-family: Inter, sans-serif;">
+                        <strong style="color: #ff00f5; font-size: 16px;">${countryName}</strong><br>
+                        <span style="color: #00f0ff;">Data Breaches:</span> <strong>${breachCount.toLocaleString()}</strong>
+                    </div>
+                `)
+                .openOn(modalMap);
+        }
+        
+        function onEachFeature(feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: onCountryClick
+            });
+        }
+        
+        // Add GeoJSON layer
+        const geoJsonLayer = L.geoJson(geoData, {
+            style: style,
+            onEachFeature: onEachFeature
+        }).addTo(modalMap);
+        
+        // Add legend
+        const legend = L.control({ position: 'bottomright' });
+        
+        legend.onAdd = function(map) {
+            const div = L.DomUtil.create('div', 'info legend');
+            div.style.background = 'rgba(10, 14, 39, 0.9)';
+            div.style.padding = '10px';
+            div.style.borderRadius = '8px';
+            div.style.border = '1px solid #00f0ff';
+            div.style.color = '#ffffff';
+            div.style.fontFamily = 'Inter, sans-serif';
+            div.style.fontSize = '12px';
+            
+            const grades = [0, Math.floor(maxBreaches * 0.25), Math.floor(maxBreaches * 0.5), Math.floor(maxBreaches * 0.75), maxBreaches];
+            
+            div.innerHTML = '<strong style="color: #ff00f5;">Breach Frequency</strong><br>';
+            
+            for (let i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + getColor(grades[i] + 1) + '; width: 18px; height: 18px; display: inline-block; margin-right: 5px; border: 1px solid #00f0ff;"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }
+            
+            return div;
+        };
+        
+        legend.addTo(modalMap);
+        
+        // Force map to refresh after modal is fully visible
+        setTimeout(() => {
+            modalMap.invalidateSize();
+        }, 200);
+        
+        console.log('Modal Map 5 created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating Modal Map 5:', error);
+    }
+}
+
+// Visualization 6: Doughnut Chart showing Defense Mechanism distribution
+async function createChart6() {
+    console.log('Creating Chart 6 (Defense Mechanisms)...');
+    
+    // Prevent multiple creations
+    if (chart6) {
+        console.log('Chart 6 already exists');
+        return;
+    }
+    
+    try {
+        // Check if canvas exists
+        const canvas = document.getElementById('visualization6');
+        if (!canvas) {
+            console.error('Canvas visualization6 not found');
+            return;
+        }
+        
+        // Fetch and parse CSV data
+        const response = await fetch('data/data_breaches_global.csv');
+        const csvText = await response.text();
+        
+        // Parse CSV manually
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',');
+        const defenseIndex = headers.findIndex(h => h.trim() === 'Defense Mechanism Used');
+        
+        console.log('Defense Mechanism column index:', defenseIndex);
+        
+        // Count defense mechanisms
+        const defenseCounts = {};
+        
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            
+            const values = lines[i].split(',');
+            const defense = values[defenseIndex]?.trim();
+            
+            if (defense && defense !== '') {
+                defenseCounts[defense] = (defenseCounts[defense] || 0) + 1;
+            }
+        }
+        
+        console.log('Defense mechanism counts:', defenseCounts);
+        
+        // Prepare data for chart
+        const labels = Object.keys(defenseCounts);
+        const data = Object.values(defenseCounts);
+        const total = data.reduce((sum, val) => sum + val, 0);
+        
+        // Neon colors for each defense mechanism
+        const colors = [
+            'rgba(0, 240, 255, 0.8)',   // Cyan
+            'rgba(176, 38, 255, 0.8)',  // Purple
+            'rgba(255, 0, 245, 0.8)',   // Pink
+            'rgba(0, 255, 170, 0.8)',   // Green-cyan
+            'rgba(255, 100, 180, 0.8)'  // Pink-red
+        ];
+        
+        const borderColors = [
+            '#00f0ff',
+            '#b026ff',
+            '#ff00f5',
+            '#00ffaa',
+            '#ff64b4'
+        ];
+        
+        const ctx = document.getElementById('visualization6').getContext('2d');
+        
+        chart6 = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderColor: borderColors.slice(0, labels.length),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.3,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff',
+                            font: {
+                                family: 'Inter, sans-serif',
+                                size: 12
+                            },
+                            padding: 15
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(10, 14, 39, 0.9)',
+                        titleColor: '#ff00f5',
+                        bodyColor: '#ffffff',
+                        borderColor: '#00f0ff',
+                        borderWidth: 1,
+                        padding: 12,
+                        bodyFont: {
+                            family: 'Inter, sans-serif',
+                            size: 13
+                        },
+                        titleFont: {
+                            family: 'Inter, sans-serif',
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} incidents (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('Chart 6 (Doughnut) created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating Chart 6:', error);
+    }
+}
+
+// Create modal version of Chart 6
+async function createModalChart6() {
+    console.log('Creating Modal Chart 6...');
+    
+    try {
+        // Fetch and parse CSV data
+        const response = await fetch('data/data_breaches_global.csv');
+        const csvText = await response.text();
+        
+        // Parse CSV manually
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',');
+        const defenseIndex = headers.findIndex(h => h.trim() === 'Defense Mechanism Used');
+        
+        // Count defense mechanisms
+        const defenseCounts = {};
+        
+        for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            
+            const values = lines[i].split(',');
+            const defense = values[defenseIndex]?.trim();
+            
+            if (defense && defense !== '') {
+                defenseCounts[defense] = (defenseCounts[defense] || 0) + 1;
+            }
+        }
+        
+        // Prepare data for chart
+        const labels = Object.keys(defenseCounts);
+        const data = Object.values(defenseCounts);
+        const total = data.reduce((sum, val) => sum + val, 0);
+        
+        // Neon colors for each defense mechanism
+        const colors = [
+            'rgba(0, 240, 255, 0.8)',   // Cyan
+            'rgba(176, 38, 255, 0.8)',  // Purple
+            'rgba(255, 0, 245, 0.8)',   // Pink
+            'rgba(0, 255, 170, 0.8)',   // Green-cyan
+            'rgba(255, 100, 180, 0.8)'  // Pink-red
+        ];
+        
+        const borderColors = [
+            '#00f0ff',
+            '#b026ff',
+            '#ff00f5',
+            '#00ffaa',
+            '#ff64b4'
+        ];
+        
+        const ctx = document.getElementById('modal-canvas').getContext('2d');
+        
+        const modalChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderColor: borderColors.slice(0, labels.length),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: '#ffffff',
+                            font: {
+                                family: 'Inter, sans-serif',
+                                size: 14
+                            },
+                            padding: 20
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(10, 14, 39, 0.9)',
+                        titleColor: '#ff00f5',
+                        bodyColor: '#ffffff',
+                        borderColor: '#00f0ff',
+                        borderWidth: 1,
+                        padding: 15,
+                        bodyFont: {
+                            family: 'Inter, sans-serif',
+                            size: 15
+                        },
+                        titleFont: {
+                            family: 'Inter, sans-serif',
+                            size: 16,
+                            weight: 'bold'
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} incidents (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('Modal Chart 6 created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating Modal Chart 6:', error);
+    }
 }
