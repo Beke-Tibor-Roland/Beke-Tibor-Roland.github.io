@@ -60,6 +60,26 @@ document.addEventListener('DOMContentLoaded', async function() {
             const targetId = link.getAttribute('href');
             // Only prevent default and smooth scroll if it's a hash link on the same page
             if (targetId && targetId.startsWith('#')) {
+                if (!link.closest('.nav-dropdown') || window.innerWidth > 968) {
+                    e.preventDefault();
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            }
+            // Otherwise let the link work normally (for cross-page navigation)
+        });
+    });
+
+    // Smooth scroll for dropdown links
+    dropdownLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            const targetId = link.getAttribute('href');
+            if (targetId && targetId.startsWith('#')) {
                 e.preventDefault();
                 const targetSection = document.querySelector(targetId);
                 if (targetSection) {
@@ -69,7 +89,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                     });
                 }
             }
-            // Otherwise let the link work normally (for cross-page navigation)
         });
     });
 
