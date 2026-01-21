@@ -573,6 +573,11 @@ body {
     min-height: 400px;
 }
 
+#viz4 .viz-container {
+    height: 480px;
+    min-height: 450px;
+}
+
 #viz8 .viz-container {
     height: 550px;
     min-height: 500px;

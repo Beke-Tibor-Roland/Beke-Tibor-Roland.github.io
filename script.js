@@ -1549,7 +1549,7 @@ function createChart4() {
         options: {
             responsive: true,
             maintainAspectRatio: true,
-            aspectRatio: 2,
+            aspectRatio: 1.8,
             animation: {
                 duration: 1500,
                 easing: 'easeOutQuart',
