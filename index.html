@@ -34,6 +34,8 @@
                         <li><a href="#viz4" class="dropdown-link">Major Breaches</a></li>
                         <li><a href="#viz5" class="dropdown-link">Global Heatmap</a></li>
                         <li><a href="#viz6" class="dropdown-link">Defense Mechanisms</a></li>
+                        <li><a href="#viz7" class="dropdown-link">Password Security</a></li>
+                        <li><a href="#viz8" class="dropdown-link">Exposed Data Types</a></li>
                     </ul>
                 </li>
                 <li><a href="#contact" class="nav-link">Security Check</a></li>
@@ -335,6 +337,86 @@
                         identify industry trends, evaluate the effectiveness of different security approaches, and highlight 
                         gaps in organizational security strategies. The proportional sizing allows for quick comparison of 
                         defense mechanism popularity and can guide security investment decisions.
+                    </p>
+                    <a href="insights.html" class="btn btn-small">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 7: Password Risk Analysis -->
+    <section class="viz-section" id="viz7">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Password Security Analysis</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Password Risk Distribution Across Breaches</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <canvas id="visualization7"></canvas>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This doughnut chart reveals the password security landscape across all recorded data breaches. 
+                        It categorizes breaches by password protection strength: "Hard to Crack" (strong hashing like bcrypt), 
+                        "Easy to Crack" (weak hashing like MD5 or plain text), and "Unknown" (no information available). 
+                        The visualization exposes how many organizations implement proper password security versus those 
+                        leaving user credentials vulnerable. High proportions of "Easy to Crack" segments indicate widespread 
+                        negligence in password protection, while "Hard to Crack" segments show responsible security practices. 
+                        This insight is crucial for understanding industry-wide password security maturity and emphasizing 
+                        the importance of strong cryptographic hashing standards.
+                    </p>
+                    <a href="insights.html" class="btn btn-small">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visualization 8: Exposed Data Types -->
+    <section class="viz-section" id="viz8">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-line"></span>
+                    <span class="title-text">Most Exposed Data Types</span>
+                    <span class="title-line"></span>
+                </h2>
+            </div>
+            <div class="viz-content reverse">
+                <div class="viz-container glass-card">
+                    <div class="viz-header">
+                        <h3 class="viz-title">Frequency of Compromised Data Categories</h3>
+                        <button class="btn-icon" aria-label="Fullscreen">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <canvas id="visualization8"></canvas>
+                </div>
+                <div class="viz-description glass-card">
+                    <h3 class="viz-title">Analysis</h3>
+                    <p>
+                        This horizontal bar chart displays the most frequently exposed data types across all recorded breaches. 
+                        Each bar represents a category of personal information—such as email addresses, passwords, phone numbers, 
+                        names, and geographic locations—ranked by exposure frequency. The visualization reveals which data types 
+                        are most commonly targeted by attackers and most vulnerable to exposure. Email addresses and usernames 
+                        typically dominate due to their value for phishing and account takeovers, while more sensitive data like 
+                        financial information and health records appear less frequently but carry higher risks. Understanding these 
+                        patterns helps organizations prioritize data protection efforts and users recognize which personal information 
+                        requires the most vigilant safeguarding.
                     </p>
                     <a href="insights.html" class="btn btn-small">Learn More</a>
                 </div>

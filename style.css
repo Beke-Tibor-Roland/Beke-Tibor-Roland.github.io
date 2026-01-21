@@ -498,7 +498,7 @@ body {
 .glass-card:hover {
     border-color: var(--neon-cyan);
     box-shadow: 0 8px 32px rgba(0, 240, 255, 0.2);
-    transform: translateY(-5px) translateZ(0);
+    transform: translateZ(0);
 }
 
 /* Sections */
@@ -563,11 +563,28 @@ body {
 
 .viz-container {
     position: relative;
+    min-height: 500px;
+    height: 600px;
+    padding: 20px;
+}
+
+#viz7 .viz-container {
+    height: 450px;
     min-height: 400px;
+}
+
+#viz8 .viz-container {
+    height: 550px;
+    min-height: 500px;
 }
 
 .viz-container > div {
     width: 100% !important;
+}
+
+.viz-container canvas {
+    max-width: 100%;
+    height: auto !important;
 }
 
 /* Chart Modal Overlay */

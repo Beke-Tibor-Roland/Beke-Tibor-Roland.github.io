@@ -162,6 +162,14 @@ document.addEventListener('DOMContentLoaded', async function() {
                     console.log('Creating Chart 6...');
                     chartObserver.unobserve(element);
                     createChart6();
+                } else if (elementId === 'visualization7' && !chart7) {
+                    console.log('Creating Chart 7...');
+                    chartObserver.unobserve(element);
+                    createChart7();
+                } else if (elementId === 'visualization8' && !chart8) {
+                    console.log('Creating Chart 8...');
+                    chartObserver.unobserve(element);
+                    createChart8();
                 }
             }
         });
@@ -171,7 +179,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
     
     // Observe all chart canvases and map containers
-    const elementsToObserve = document.querySelectorAll('#visualization1, #visualization2, #visualization3, #visualization4, #visualization5, #visualization6');
+    const elementsToObserve = document.querySelectorAll('#visualization1, #visualization2, #visualization3, #visualization4, #visualization5, #visualization6, #visualization7, #visualization8');
     console.log('Elements found to observe:', elementsToObserve.length);
     elementsToObserve.forEach(element => {
         console.log('Observing:', element.id, element.tagName);
@@ -266,6 +274,10 @@ function openChartModal(chartNumber, title) {
             modalChart = createModalChart4(ctx);
         } else if (chartNumber === 6) {
             createModalChart6();
+        } else if (chartNumber === 7) {
+            createModalChart7();
+        } else if (chartNumber === 8) {
+            createModalChart8();
         }
     }
     
@@ -794,7 +806,7 @@ function scrollToSection(sectionId) {
 // Global data storage
 let breachData = [];
 let xposedBreachData = [];
-let chart1, chart2, chart3, chart4, chart6, map5;
+let chart1, chart2, chart3, chart4, chart6, chart7, chart8, map5;
 
 // Fetch breach data from your GitHub API with caching
 async function fetchBreachData() {
@@ -1605,8 +1617,24 @@ async function createMap5() {
     console.log('Creating Map 5 (Choropleth)...');
     
     try {
+        // Check if visualization5 div exists
+        const mapContainer = document.getElementById('visualization5');
+        if (!mapContainer) {
+            console.error('Map container visualization5 not found!');
+            return;
+        }
+        
+        // Clear any existing map instance
+        if (map5) {
+            map5.remove();
+            map5 = null;
+        }
+        
         // Fetch and parse CSV data
         const response = await fetch('data/data_breaches_global.csv');
+        if (!response.ok) {
+            throw new Error(`Failed to fetch CSV: ${response.status}`);
+        }
         const csvText = await response.text();
         
         // Parse CSV manually
@@ -2275,3 +2303,414 @@ async function createModalChart6() {
         console.error('Error creating Modal Chart 6:', error);
     }
 }
+
+// Visualization 7: Password Risk Analysis Doughnut Chart
+async function createChart7() {
+    try {
+        console.log('Creating Chart 7 - Password Risk Analysis...');
+        const canvas = document.getElementById('visualization7');
+        
+        if (!canvas) {
+            console.error('Canvas visualization7 not found!');
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Fetch scraped data specifically for this chart
+        const response = await fetch('api/data_breaches_scraped.json');
+        const scrapedData = await response.json();
+        
+        // Aggregate password risk data
+        const riskMap = new Map();
+        scrapedData.forEach(breach => {
+            const risk = breach.password_risk || 'unknown';
+            // Only count if not unknown
+            if (risk !== 'unknown') {
+                riskMap.set(risk, (riskMap.get(risk) || 0) + 1);
+            }
+        });
+        
+        // If no data, add a placeholder
+        if (riskMap.size === 0) {
+            console.warn('No password risk data available');
+            riskMap.set('unknown', scrapedData.length);
+        }
+        
+        // Prepare data with proper labels
+        const riskLabels = {
+            'hardtocrack': 'Hard to Crack',
+            'easytocrack': 'Easy to Crack'
+        };
+        
+        const labels = Array.from(riskMap.keys()).map(key => riskLabels[key] || key);
+        const data = Array.from(riskMap.values());
+        
+        // Color scheme matching password security levels
+        const colors = Array.from(riskMap.keys()).map(risk => {
+            if (risk === 'hardtocrack') return '#00ff88'; // Green for strong
+            if (risk === 'easytocrack') return '#ff3366'; // Red for weak
+            return '#6c757d'; // Gray for fallback
+        });
+        
+        chart7 = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => c + '80'),
+                    borderWidth: 2,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: '#fff',
+                            font: {
+                                family: 'Inter, sans-serif',
+                                size: 14
+                            },
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                        titleColor: '#00f0ff',
+                        bodyColor: '#fff',
+                        borderColor: '#00f0ff',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value.toLocaleString()} breaches (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('✓ Chart 7 created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating Chart 7:', error);
+    }
+}
+
+// Visualization 8: Exposed Data Types Bar Chart
+async function createChart8() {
+    try {
+        console.log('Creating Chart 8 - Exposed Data Types...');
+        const canvas = document.getElementById('visualization8');
+        
+        if (!canvas) {
+            console.error('Canvas visualization8 not found!');
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Fetch scraped data specifically for this chart
+        const response = await fetch('api/data_breaches_scraped.json');
+        const scrapedData = await response.json();
+        
+        // Parse and count data types from data_classes field
+        const dataTypeMap = new Map();
+        scrapedData.forEach(breach => {
+            const dataClasses = breach.data_classes || '';
+            if (dataClasses) {
+                // Split by comma and clean up
+                const types = dataClasses.split(',').map(t => t.trim());
+                types.forEach(type => {
+                    if (type) {
+                        dataTypeMap.set(type, (dataTypeMap.get(type) || 0) + 1);
+                    }
+                });
+            }
+        });
+        
+        // Sort by frequency and take top 15
+        const sortedTypes = Array.from(dataTypeMap.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15);
+        
+        const labels = sortedTypes.map(d => d[0]);
+        const data = sortedTypes.map(d => d[1]);
+        
+        // Create gradient for bars
+        const backgroundColors = data.map((_, i) => {
+            const gradient = ctx.createLinearGradient(0, 0, 600, 0);
+            if (i < 5) {
+                gradient.addColorStop(0, '#ff00f5');
+                gradient.addColorStop(1, '#b026ff');
+            } else if (i < 10) {
+                gradient.addColorStop(0, '#b026ff');
+                gradient.addColorStop(1, '#00f0ff');
+            } else {
+                gradient.addColorStop(0, '#00f0ff');
+                gradient.addColorStop(1, 'rgba(0, 240, 255, 0.5)');
+            }
+            return gradient;
+        });
+        
+        chart8 = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Exposure Frequency',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#00f0ff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Horizontal bars
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                        titleColor: '#00f0ff',
+                        bodyColor: '#fff',
+                        borderColor: '#00f0ff',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return `Exposed in ${context.parsed.x.toLocaleString()} breaches`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 240, 255, 0.1)',
+                            borderColor: '#00f0ff'
+                        },
+                        ticks: {
+                            color: '#fff',
+                            font: {
+                                family: 'Inter, sans-serif',
+                                size: 12
+                            }
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(176, 38, 255, 0.1)',
+                            borderColor: '#b026ff'
+                        },
+                        ticks: {
+                            color: '#fff',
+                            font: {
+                                family: 'Inter, sans-serif',
+                                size: 11
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        console.log('✓ Chart 8 created successfully!');
+        
+    } catch (error) {
+        console.error('Error creating Chart 8:', error);
+    }
+}
+
+// Modal Chart 7: Password Risk Analysis (Fullscreen)
+async function createModalChart7() {
+    try {
+        const modalCanvas = document.querySelector('#modal-canvas');
+        const ctx = modalCanvas.getContext('2d');
+        
+        // Fetch scraped data
+        const response = await fetch('api/data_breaches_scraped.json');
+        const scrapedData = await response.json();
+        
+        // Aggregate password risk data
+        const riskMap = new Map();
+        scrapedData.forEach(breach => {
+            const risk = breach.password_risk || 'unknown';
+            if (risk !== 'unknown') {
+                riskMap.set(risk, (riskMap.get(risk) || 0) + 1);
+            }
+        });
+        
+        if (riskMap.size === 0) {
+            riskMap.set('unknown', scrapedData.length);
+        }
+        
+        const riskLabels = {
+            'hardtocrack': 'Hard to Crack',
+            'easytocrack': 'Easy to Crack'
+        };
+        
+        const labels = Array.from(riskMap.keys()).map(key => riskLabels[key] || key);
+        const data = Array.from(riskMap.values());
+        
+        const colors = Array.from(riskMap.keys()).map(risk => {
+            if (risk === 'hardtocrack') return '#00ff88';
+            if (risk === 'easytocrack') return '#ff3366';
+            return '#6c757d';
+        });
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => c + '80'),
+                    borderWidth: 2,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: '#fff',
+                            font: { family: 'Inter, sans-serif', size: 16 },
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                        titleColor: '#00f0ff',
+                        bodyColor: '#fff',
+                        borderColor: '#00f0ff',
+                        borderWidth: 1,
+                        padding: 12
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error creating Modal Chart 7:', error);
+    }
+}
+
+// Modal Chart 8: Exposed Data Types (Fullscreen)
+async function createModalChart8() {
+    try {
+        const modalCanvas = document.querySelector('#modal-canvas');
+        const ctx = modalCanvas.getContext('2d');
+        
+        // Fetch scraped data
+        const response = await fetch('api/data_breaches_scraped.json');
+        const scrapedData = await response.json();
+        
+        // Parse data types
+        const dataTypeMap = new Map();
+        scrapedData.forEach(breach => {
+            const dataClasses = breach.data_classes || '';
+            if (dataClasses) {
+                const types = dataClasses.split(',').map(t => t.trim());
+                types.forEach(type => {
+                    if (type) {
+                        dataTypeMap.set(type, (dataTypeMap.get(type) || 0) + 1);
+                    }
+                });
+            }
+        });
+        
+        const sortedTypes = Array.from(dataTypeMap.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15);
+        
+        const labels = sortedTypes.map(d => d[0]);
+        const data = sortedTypes.map(d => d[1]);
+        
+        const backgroundColors = data.map((_, i) => {
+            const gradient = ctx.createLinearGradient(0, 0, 800, 0);
+            if (i < 5) {
+                gradient.addColorStop(0, '#ff00f5');
+                gradient.addColorStop(1, '#b026ff');
+            } else if (i < 10) {
+                gradient.addColorStop(0, '#b026ff');
+                gradient.addColorStop(1, '#00f0ff');
+            } else {
+                gradient.addColorStop(0, '#00f0ff');
+                gradient.addColorStop(1, 'rgba(0, 240, 255, 0.5)');
+            }
+            return gradient;
+        });
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Exposure Frequency',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: '#00f0ff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(10, 14, 39, 0.95)',
+                        titleColor: '#00f0ff',
+                        bodyColor: '#fff',
+                        borderColor: '#00f0ff',
+                        borderWidth: 1,
+                        padding: 12
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 240, 255, 0.1)', borderColor: '#00f0ff' },
+                        ticks: { color: '#fff', font: { family: 'Inter, sans-serif', size: 14 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(176, 38, 255, 0.1)', borderColor: '#b026ff' },
+                        ticks: { color: '#fff', font: { family: 'Inter, sans-serif', size: 12 } }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error creating Modal Chart 8:', error);
+    }
+}
+

@@ -9,7 +9,6 @@ import csv
 import time
 from datetime import datetime
 from bs4 import BeautifulSoup
-import pandas as pd
 
 class BreachDataScraper:
     def __init__(self):
@@ -64,7 +63,7 @@ class BreachDataScraper:
             response = requests.get(url, headers=self.headers, timeout=30)
             
             if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
+                soup = BeautifulSoup(response.content, 'html.parser')  # Using built-in parser
                 
                 # Find breach table rows
                 breach_rows = soup.find_all('tr', class_='views-row')
@@ -105,7 +104,7 @@ class BreachDataScraper:
                 response = requests.get(url, headers=self.headers, timeout=30)
                 
                 if response.status_code == 200:
-                    soup = BeautifulSoup(response.content, 'html.parser')
+                    soup = BeautifulSoup(response.content, 'html.parser')  # Using built-in parser
                     
                     # Find breach entries (they use <h3> for organization names)
                     breach_entries = soup.find_all(['h3', 'h4'])
